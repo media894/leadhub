@@ -1,0 +1,43 @@
+const mongoose = require('mongoose');
+
+const serviceSchema = new mongoose.Schema(
+  {
+    user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true, index: true },
+    name: { type: String, required: true },
+    description: { type: String, default: '' },
+    keywords: [{ type: String }],
+    
+    // Email Template & Attachment for this Service
+    emailSubject: {
+      type: String,
+      default: 'Proposal for {{product}}',
+    },
+    emailBody: {
+      type: String,
+      default: 'Dear {{name}},',
+    },
+    emailAttachment: {
+      filename: { type: String, default: '' },
+      path: { type: String, default: '' },
+      mimetype: { type: String, default: '' },
+      size: { type: Number, default: 0 },
+    },
+
+    // WhatsApp Template & Attachment for this Service
+    whatsappMessage: {
+      type: String,
+      default: 'Hi {{name}} 👋, thanks for your enquiry about {{product}}!',
+    },
+    whatsappAttachment: {
+      filename: { type: String, default: '' },
+      path: { type: String, default: '' },
+      mimetype: { type: String, default: '' },
+      size: { type: Number, default: 0 },
+    },
+
+    isDefault: { type: Boolean, default: false },
+  },
+  { timestamps: true }
+);
+
+module.exports = mongoose.model('Service', serviceSchema);
