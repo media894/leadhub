@@ -52,6 +52,28 @@ cron.schedule('* * * * *', async () => {
 
 const PORT = process.env.PORT || 5000;
 
+async function seedMasterAdmin() {
+  try {
+    const User = require('./models/User');
+    let admin = await User.findOne({ email: 'natasha@oddinfotech.com' });
+    if (!admin) {
+      admin = await User.create({
+        name: 'Natasha (Master Admin)',
+        email: 'natasha@oddinfotech.com',
+        companyName: 'Odd Infotech',
+        password: 'OddInfotech@2026',
+        role: 'admin',
+        isApproved: true,
+      });
+      await Settings.create({ user: admin._id });
+      console.log('[seed] Master Admin natasha@oddinfotech.com created automatically.');
+    }
+  } catch (err) {
+    console.error('[seed] Error seeding admin:', err.message);
+  }
+}
+
 connectDB().then(() => {
+  seedMasterAdmin();
   app.listen(PORT, () => console.log(`[server] LeadHub backend running on port ${PORT}`));
 });

@@ -4,7 +4,7 @@ export default function PasswordInput({
   label,
   value,
   onChange,
-  placeholder = '••••••••',
+  placeholder = 'Enter password',
   required = false,
   minLength,
   hint,

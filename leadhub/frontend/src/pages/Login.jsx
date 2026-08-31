@@ -58,7 +58,7 @@ export default function Login() {
             required
             value={form.password}
             onChange={(e) => setForm({ ...form, password: e.target.value })}
-            placeholder="••••••••"
+            placeholder="Enter your password"
           />
 
           <button
