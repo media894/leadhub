@@ -28,14 +28,7 @@ function AppRoutes() {
     <Routes>
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
-      <Route
-        path="/onboarding"
-        element={
-          <Protected>
-            <Onboarding />
-          </Protected>
-        }
-      />
+      <Route path="/onboarding" element={<Navigate to="/dashboard" replace />} />
       <Route
         path="/dashboard"
         element={
