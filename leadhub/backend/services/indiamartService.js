@@ -136,12 +136,17 @@ async function processNewLead(userId, settings, leadDoc) {
     : (matchedService.emailAttachment ? [matchedService.emailAttachment] : []);
 
   // Determine WhatsApp templates & attachments from matched service
+  const useGlobal = !!matchedService.useGlobalWhatsapp;
   const whatsappTemplates = {
-    whatsappGreeting: matchedService.whatsappMessage || settings.templates?.whatsappGreeting,
+    whatsappGreeting: useGlobal
+      ? (settings.templates?.whatsappGreeting || 'Hi {{name}} 👋, thanks for your enquiry about {{product}}!')
+      : (matchedService.whatsappMessage || settings.templates?.whatsappGreeting),
   };
-  const whatsappAttachments = (matchedService.whatsappAttachments && matchedService.whatsappAttachments.length > 0)
-    ? matchedService.whatsappAttachments
-    : (matchedService.whatsappAttachment ? [matchedService.whatsappAttachment] : []);
+  const whatsappAttachments = useGlobal
+    ? []
+    : ((matchedService.whatsappAttachments && matchedService.whatsappAttachments.length > 0)
+        ? matchedService.whatsappAttachments
+        : (matchedService.whatsappAttachment ? [matchedService.whatsappAttachment] : []));
 
   // Auto email
   if (settings.automation.autoEmailEnabled && settings.smtp.host && lead.senderEmail) {

@@ -26,6 +26,7 @@ const serviceSchema = new mongoose.Schema(
     ],
 
     // WhatsApp Template & Attachments (Up to 5 files)
+    useGlobalWhatsapp: { type: Boolean, default: false },
     whatsappMessage: {
       type: String,
       default: 'Hi {{name}} 👋, thanks for your enquiry about {{product}}!',

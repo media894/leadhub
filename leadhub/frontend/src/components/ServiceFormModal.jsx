@@ -10,6 +10,7 @@ export default function ServiceFormModal({ isOpen, onClose, serviceToEdit, onSav
   const [emailBody, setEmailBody] = useState('');
   const [emailAttachments, setEmailAttachments] = useState([]);
 
+  const [useGlobalWhatsapp, setUseGlobalWhatsapp] = useState(false);
   const [whatsappMessage, setWhatsappMessage] = useState('');
   const [whatsappAttachments, setWhatsappAttachments] = useState([]);
 
@@ -33,6 +34,7 @@ export default function ServiceFormModal({ isOpen, onClose, serviceToEdit, onSav
         : (serviceToEdit.emailAttachment?.filename ? [serviceToEdit.emailAttachment] : []);
       setEmailAttachments(emailList);
 
+      setUseGlobalWhatsapp(!!serviceToEdit.useGlobalWhatsapp);
       setWhatsappMessage(
         serviceToEdit.whatsappMessage || 'Hi {{name}} 👋, thanks for your enquiry about {{product}}!'
       );
@@ -47,6 +49,7 @@ export default function ServiceFormModal({ isOpen, onClose, serviceToEdit, onSav
       setEmailSubject('Proposal for {{product}}');
       setEmailBody('Dear {{name}},');
       setEmailAttachments([]);
+      setUseGlobalWhatsapp(false);
       setWhatsappMessage('Hi {{name}} 👋, thanks for your enquiry about {{product}}!');
       setWhatsappAttachments([]);
     }
@@ -117,6 +120,7 @@ export default function ServiceFormModal({ isOpen, onClose, serviceToEdit, onSav
         emailBody,
         emailAttachments,
         emailAttachment: emailAttachments[0] || { filename: '', path: '' },
+        useGlobalWhatsapp,
         whatsappMessage,
         whatsappAttachments,
         whatsappAttachment: whatsappAttachments[0] || { filename: '', path: '' },
@@ -174,8 +178,6 @@ export default function ServiceFormModal({ isOpen, onClose, serviceToEdit, onSav
                 className="w-full glass-input rounded-xl px-3.5 py-2.5 text-xs text-slate-100 font-mono focus:border-amber-500 outline-none"
               />
             </div>
-
-
 
             <p className="text-[11px] text-slate-400 font-medium">
               💡 System will automatically match incoming IndiaMART leads related to this Service Name.
@@ -258,78 +260,111 @@ export default function ServiceFormModal({ isOpen, onClose, serviceToEdit, onSav
             </div>
           </div>
 
-          {/* WhatsApp Template & Multi Attachments (Up to 5) */}
+          {/* WhatsApp Template & Multi Attachments */}
           <div className="space-y-3 p-4 bg-slate-950/70 rounded-xl border border-slate-800">
             <h3 className="font-extrabold text-xs text-emerald-400 uppercase tracking-wider flex items-center gap-2">
               <span className="w-2 h-2 rounded-full bg-emerald-500" />
-              WhatsApp Greeting & Media Attachments (Up to 5 Files)
+              WhatsApp Greeting & Media Attachments
             </h3>
 
-            {/* Line space multi-message tip */}
-            <div className="p-2.5 bg-blue-500/10 border border-blue-500/30 rounded-xl text-[11px] text-blue-300 font-semibold flex items-center space-x-1.5">
-              <span>💡</span>
-              <span><strong>Pro-Tip:</strong> Leave a 1-line space (Enter twice) to send as separate WhatsApp messages!</span>
-            </div>
-
-            <div>
-              <label className="text-xs font-bold text-slate-200 mb-1 block">WhatsApp Message</label>
-              <textarea
-                rows={4}
-                value={whatsappMessage}
-                onChange={(e) => setWhatsappMessage(e.target.value)}
-                className="w-full glass-input rounded-xl p-3 text-xs text-slate-100 font-mono leading-relaxed focus:border-amber-500 outline-none"
-              />
-              <span className="text-[11px] text-amber-400 font-mono mt-1 block">
-                Placeholders: {'{{name}}'}, {'{{product}}'}, {'{{company}}'}
-              </span>
-            </div>
-
-            <div>
-              <div className="flex items-center justify-between mb-1.5">
-                <label className="text-xs font-bold text-slate-200">
-                  WhatsApp Media Attachments ({whatsappAttachments.length}/5 Files)
-                </label>
-                <span className="text-[11px] text-slate-400">PDFs, Images, GIFs, Videos</span>
+            {/* Global WhatsApp Toggle */}
+            <div className="flex items-center justify-between bg-slate-900/90 p-3.5 rounded-xl border border-slate-800">
+              <div>
+                <span className="text-xs font-bold text-slate-100 block">
+                  Use Fixed Default Template For All Services
+                </span>
+                <span className="text-[11px] text-slate-400">
+                  Enable to use global default template instead of custom per-service message
+                </span>
               </div>
+              <button
+                type="button"
+                onClick={() => setUseGlobalWhatsapp(!useGlobalWhatsapp)}
+                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                  useGlobalWhatsapp ? 'bg-amber-500' : 'bg-slate-800 border border-slate-700'
+                }`}
+              >
+                <span
+                  className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                    useGlobalWhatsapp ? 'translate-x-6' : 'translate-x-1'
+                  }`}
+                />
+              </button>
+            </div>
 
-              {/* Upload Button */}
-              {whatsappAttachments.length < 5 && (
-                <div className="mb-3">
-                  <input
-                    type="file"
-                    id="wa-attach-file"
-                    accept="image/*,.gif,.pdf,.doc,.docx,.png,.jpg,.jpeg"
-                    className="hidden"
-                    onChange={(e) => e.target.files?.[0] && handleFileUpload(e.target.files[0], 'whatsapp')}
-                  />
-                  <label
-                    htmlFor="wa-attach-file"
-                    className="bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 text-xs font-bold px-4 py-2 rounded-xl cursor-pointer transition-colors inline-flex items-center gap-2"
-                  >
-                    {uploadingWa ? 'Uploading...' : `📷 Add WhatsApp Media (${whatsappAttachments.length + 1}/5)`}
-                  </label>
+            {useGlobalWhatsapp ? (
+              <div className="p-3.5 bg-amber-500/10 border border-amber-500/30 rounded-xl text-xs text-amber-300 font-semibold leading-relaxed">
+                ⚡ <strong>Fixed Global WhatsApp Template Active:</strong> Leads matching this service will automatically receive your global default WhatsApp greeting template.
+              </div>
+            ) : (
+              <>
+                {/* Line space multi-message tip */}
+                <div className="p-2.5 bg-blue-500/10 border border-blue-500/30 rounded-xl text-[11px] text-blue-300 font-semibold flex items-center space-x-1.5">
+                  <span>💡</span>
+                  <span><strong>Pro-Tip:</strong> Leave a 1-line space (Enter twice) to send as separate WhatsApp messages!</span>
                 </div>
-              )}
 
-              {/* Uploaded Files Badges List */}
-              <div className="space-y-2">
-                {whatsappAttachments.map((att, idx) => (
-                  <div key={idx} className="flex items-center justify-between bg-slate-900/90 border border-slate-800 px-3 py-2 rounded-xl text-xs">
-                    <div className="flex items-center gap-2 overflow-hidden">
-                      <span className="text-emerald-400 font-bold">#{idx + 1}</span>
-                      <span className="text-slate-200 truncate font-mono">{att.filename || 'Media'}</span>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => removeWhatsappAttachment(idx)}
-                      className="text-rose-400 hover:text-rose-300 font-extrabold px-2 py-0.5 rounded hover:bg-rose-500/10 transition-colors"
-                    >
-                      ✕ Remove
-                    </button>
+                <div>
+                  <label className="text-xs font-bold text-slate-200 mb-1 block">Custom WhatsApp Message</label>
+                  <textarea
+                    rows={4}
+                    value={whatsappMessage}
+                    onChange={(e) => setWhatsappMessage(e.target.value)}
+                    className="w-full glass-input rounded-xl p-3 text-xs text-slate-100 font-mono leading-relaxed focus:border-amber-500 outline-none"
+                  />
+                  <span className="text-[11px] text-amber-400 font-mono mt-1 block">
+                    Placeholders: {'{{name}}'}, {'{{product}}'}, {'{{company}}'}
+                  </span>
+                </div>
+
+                <div>
+                  <div className="flex items-center justify-between mb-1.5">
+                    <label className="text-xs font-bold text-slate-200">
+                      WhatsApp Media Attachments ({whatsappAttachments.length}/5 Files)
+                    </label>
+                    <span className="text-[11px] text-slate-400">PDFs, Images, GIFs, Videos</span>
                   </div>
-                ))}
-              </div>
-            </div>
+
+                  {/* Upload Button */}
+                  {whatsappAttachments.length < 5 && (
+                    <div className="mb-3">
+                      <input
+                        type="file"
+                        id="wa-attach-file"
+                        accept="image/*,.gif,.pdf,.doc,.docx,.png,.jpg,.jpeg"
+                        className="hidden"
+                        onChange={(e) => e.target.files?.[0] && handleFileUpload(e.target.files[0], 'whatsapp')}
+                      />
+                      <label
+                        htmlFor="wa-attach-file"
+                        className="bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 text-xs font-bold px-4 py-2 rounded-xl cursor-pointer transition-colors inline-flex items-center gap-2"
+                      >
+                        {uploadingWa ? 'Uploading...' : `📷 Add WhatsApp Media (${whatsappAttachments.length + 1}/5)`}
+                      </label>
+                    </div>
+                  )}
+
+                  {/* Uploaded Files Badges List */}
+                  <div className="space-y-2">
+                    {whatsappAttachments.map((att, idx) => (
+                      <div key={idx} className="flex items-center justify-between bg-slate-900/90 border border-slate-800 px-3 py-2 rounded-xl text-xs">
+                        <div className="flex items-center gap-2 overflow-hidden">
+                          <span className="text-emerald-400 font-bold">#{idx + 1}</span>
+                          <span className="text-slate-200 truncate font-mono">{att.filename || 'Media'}</span>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => removeWhatsappAttachment(idx)}
+                          className="text-rose-400 hover:text-rose-300 font-extrabold px-2 py-0.5 rounded hover:bg-rose-500/10 transition-colors"
+                        >
+                          ✕ Remove
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </>
+            )}
           </div>
 
           <div className="flex justify-end gap-3 pt-2">

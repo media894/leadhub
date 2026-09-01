@@ -68,6 +68,7 @@ router.post('/', async (req, res) => {
       emailBody,
       emailAttachment,
       emailAttachments,
+      useGlobalWhatsapp,
       whatsappMessage,
       whatsappAttachment,
       whatsappAttachments,
@@ -79,7 +80,6 @@ router.post('/', async (req, res) => {
     }
 
     if (isDefault) {
-      // Unset previous default
       await Service.updateMany({ user: req.userId }, { isDefault: false });
     }
 
@@ -97,6 +97,7 @@ router.post('/', async (req, res) => {
       emailBody: emailBody || undefined,
       emailAttachment: emailAttachment || {},
       emailAttachments: emailAttachments || [],
+      useGlobalWhatsapp: !!useGlobalWhatsapp,
       whatsappMessage: whatsappMessage || undefined,
       whatsappAttachment: whatsappAttachment || {},
       whatsappAttachments: whatsappAttachments || [],
@@ -120,6 +121,7 @@ router.put('/:id', async (req, res) => {
       emailBody,
       emailAttachment,
       emailAttachments,
+      useGlobalWhatsapp,
       whatsappMessage,
       whatsappAttachment,
       whatsappAttachments,
@@ -149,6 +151,7 @@ router.put('/:id', async (req, res) => {
     if (emailBody !== undefined) service.emailBody = emailBody;
     if (emailAttachment !== undefined) service.emailAttachment = emailAttachment;
     if (emailAttachments !== undefined) service.emailAttachments = emailAttachments;
+    if (useGlobalWhatsapp !== undefined) service.useGlobalWhatsapp = useGlobalWhatsapp;
     if (whatsappMessage !== undefined) service.whatsappMessage = whatsappMessage;
     if (whatsappAttachment !== undefined) service.whatsappAttachment = whatsappAttachment;
     if (whatsappAttachments !== undefined) service.whatsappAttachments = whatsappAttachments;
