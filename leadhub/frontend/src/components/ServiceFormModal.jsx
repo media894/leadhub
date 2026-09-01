@@ -49,7 +49,7 @@ export default function ServiceFormModal({ isOpen, onClose, serviceToEdit, onSav
       setEmailSubject('Proposal for {{product}}');
       setEmailBody('Dear {{name}},');
       setEmailAttachments([]);
-      setUseGlobalWhatsapp(false);
+      setUseGlobalWhatsapp(true);
       setWhatsappMessage('Hi {{name}} 👋, thanks for your enquiry about {{product}}!');
       setWhatsappAttachments([]);
     }
