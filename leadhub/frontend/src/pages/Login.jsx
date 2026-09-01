@@ -32,7 +32,7 @@ export default function Login() {
           <div className="text-white/40 text-sm mt-1">by Odd Infotech</div>
         </div>
 
-        <form onSubmit={handleSubmit} className="bg-card rounded-2xl shadow-card p-7 space-y-4">
+        <form onSubmit={handleSubmit} autoComplete="off" className="bg-card rounded-2xl shadow-card p-7 space-y-4">
           <h1 className="font-display font-semibold text-lg text-ink">Welcome back</h1>
 
           {error && (
@@ -46,6 +46,7 @@ export default function Login() {
             <input
               type="email"
               required
+              autoComplete="off"
               value={form.email}
               onChange={(e) => setForm({ ...form, email: e.target.value })}
               className="w-full border border-line rounded-lg px-3 py-2.5 text-sm focus:border-signal outline-none"
@@ -56,6 +57,7 @@ export default function Login() {
           <PasswordInput
             label="Password"
             required
+            autoComplete="new-password"
             value={form.password}
             onChange={(e) => setForm({ ...form, password: e.target.value })}
             placeholder="Enter your password"

@@ -16,7 +16,7 @@ export default function Onboarding() {
   const [showImGuide, setShowImGuide] = useState(false);
 
   // Email SMTP
-  const [smtp, setSmtp] = useState({ host: 'smtp.gmail.com', port: 587, user: '', pass: '', fromName: 'Odd Infotech' });
+  const [smtp, setSmtp] = useState({ host: 'smtp.gmail.com', port: 587, user: '', pass: '', fromName: '' });
 
   // WhatsApp
   const [qr, setQr] = useState(null);
@@ -286,7 +286,7 @@ export default function Onboarding() {
                   <input
                     value={smtp.fromName}
                     onChange={(e) => setSmtp({ ...smtp, fromName: e.target.value })}
-                    placeholder="Odd Infotech"
+                    placeholder="Enter sender name"
                     className="w-full border border-line rounded-lg px-3 py-2.5 text-sm font-mono focus:border-signal outline-none"
                   />
                 </div>

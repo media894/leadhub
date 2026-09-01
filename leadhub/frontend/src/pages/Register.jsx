@@ -67,7 +67,7 @@ export default function Register() {
               value={form.name}
               onChange={(e) => setForm({ ...form, name: e.target.value })}
               className="w-full border border-line rounded-lg px-3 py-2.5 text-sm focus:border-signal outline-none"
-              placeholder="Natasha Reddy"
+              placeholder="Enter your full name"
             />
           </div>
 
@@ -77,7 +77,7 @@ export default function Register() {
               value={form.companyName}
               onChange={(e) => setForm({ ...form, companyName: e.target.value })}
               className="w-full border border-line rounded-lg px-3 py-2.5 text-sm focus:border-signal outline-none"
-              placeholder="Odd Infotech"
+              placeholder="Enter company name"
             />
           </div>
 
@@ -89,7 +89,7 @@ export default function Register() {
               value={form.email}
               onChange={(e) => setForm({ ...form, email: e.target.value })}
               className="w-full border border-line rounded-lg px-3 py-2.5 text-sm focus:border-signal outline-none"
-              placeholder="you@company.com"
+              placeholder="Enter your email address"
             />
           </div>
 

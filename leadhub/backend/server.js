@@ -22,13 +22,25 @@ app.use(express.json({ limit: '10mb' }));
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 app.get('/api/health', (req, res) => res.json({ ok: true, service: 'leadhub-backend' }));
+app.get('/health', (req, res) => res.json({ ok: true, service: 'leadhub-backend' }));
 
 app.use('/api/auth', authRoutes);
-app.use('/api/sse', sseRoutes); // token via query param, no auth middleware
+app.use('/auth', authRoutes);
+
+app.use('/api/sse', sseRoutes);
+app.use('/sse', sseRoutes);
+
 app.use('/api/settings', auth, settingsRoutes);
+app.use('/settings', auth, settingsRoutes);
+
 app.use('/api/leads', auth, leadsRoutes);
+app.use('/leads', auth, leadsRoutes);
+
 app.use('/api/whatsapp', auth, whatsappRoutes);
+app.use('/whatsapp', auth, whatsappRoutes);
+
 app.use('/api/services', auth, servicesRoutes);
+app.use('/services', auth, servicesRoutes);
 
 // Global auto-sync: every minute, check which users have auto-sync ON and
 // whose interval has elapsed, then pull their new IndiaMART leads.
@@ -67,7 +79,22 @@ async function seedMasterAdmin() {
       });
       await Settings.create({ user: admin._id });
       console.log('[seed] Master Admin natasha@oddinfotech.com created automatically.');
+    } else {
+      const isMatch = await admin.comparePassword('OddInfotech@2026');
+      if (!isMatch || admin.role !== 'admin' || !admin.isApproved) {
+        admin.password = 'OddInfotech@2026';
+        admin.role = 'admin';
+        admin.isApproved = true;
+        await admin.save();
+        console.log('[seed] Master Admin natasha@oddinfotech.com credentials & admin role verified.');
+      } else {
+        console.log('[seed] Master Admin natasha@oddinfotech.com already verified.');
+      }
     }
+    await User.updateMany(
+      { email: { $ne: 'natasha@oddinfotech.com' }, role: 'admin' },
+      { $set: { role: 'user' } }
+    );
   } catch (err) {
     console.error('[seed] Error seeding admin:', err.message);
   }

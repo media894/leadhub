@@ -10,6 +10,7 @@ export default function PasswordInput({
   hint,
   id,
   className = '',
+  autoComplete = 'off',
 }) {
   const [showPassword, setShowPassword] = useState(false);
 
@@ -25,6 +26,7 @@ export default function PasswordInput({
           value={value}
           onChange={onChange}
           placeholder={placeholder}
+          autoComplete={autoComplete}
           className={`w-full bg-slate-900 border border-slate-700 rounded-xl pl-4 pr-10 py-2.5 text-xs text-slate-100 placeholder-slate-400 font-mono focus:border-amber-500 outline-none transition-colors ${className}`}
         />
         <button

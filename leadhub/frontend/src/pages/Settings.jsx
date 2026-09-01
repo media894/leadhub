@@ -13,7 +13,7 @@ export default function Settings() {
   const userStr = localStorage.getItem('leadhub_user');
   const currentUser = userStr ? JSON.parse(userStr) : null;
   const isMasterAdmin =
-    currentUser?.email?.toLowerCase() === 'natasha@oddinfotech.com' || currentUser?.role === 'admin';
+    currentUser?.email?.toLowerCase() === 'natasha@oddinfotech.com';
 
   const availableTabs = isMasterAdmin
     ? ['IndiaMART', 'Services', 'Email', 'Users & Access']
@@ -543,7 +543,7 @@ function EmailTab({ settings, reload, toast }) {
         <input
           value={form.user}
           onChange={(e) => setForm({ ...form, user: e.target.value })}
-          placeholder="natasha@oddinfotech.com"
+          placeholder="you@company.com"
           className={inputClass}
         />
       </Field>
@@ -560,7 +560,7 @@ function EmailTab({ settings, reload, toast }) {
         <input
           value={form.fromName}
           onChange={(e) => setForm({ ...form, fromName: e.target.value })}
-          placeholder="Natasha - Odd Infotech"
+          placeholder="Company Admin"
           className={inputClass}
         />
       </Field>

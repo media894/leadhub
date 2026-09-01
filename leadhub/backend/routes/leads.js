@@ -209,7 +209,7 @@ router.get('/inbox', async (req, res) => {
           channel: 'whatsapp',
           recipient: `${l.senderName || 'Client'} (${l.senderCompany || 'IndiaMART'}) <${l.senderMobile || '+91-9876543210'} (WhatsApp)>`,
           title: `WhatsApp Auto: ${l.productName || 'service'} template`,
-          body: `Hi ${l.senderName || 'there'},\n\nI am Natasha on behalf of Odd infotech and I got your enquiry in indiamart regarding ${l.productName || 'your requirement'}.\n\nKindly please share more details about your requirements. Let me know the suitable time to talk to you.`,
+          body: `Hi ${l.senderName || 'there'},\n\nThank you for reaching out regarding ${l.productName || 'your requirement'} on IndiaMART.\n\nKindly share more details about your requirements so we can send the right quote.`,
           sentAt: l.whatsappSentAt || l.updatedAt,
           status: 'SENT',
         });

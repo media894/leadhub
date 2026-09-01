@@ -8,7 +8,7 @@ export default function WhatsappLink() {
   const [qr, setQr] = useState(null);
   const [connecting, setConnecting] = useState(false);
   const [waMessage, setWaMessage] = useState(
-    `Hi {{name}} 👋, this is Natasha from Odd Infotech. Thanks for your enquiry about {{product}} on IndiaMART! Could you share a bit more about your requirement so we can send the right quote?`
+    `Hi {{name}} 👋, thanks for your enquiry about {{product}} on IndiaMART! Could you share a bit more about your requirement so we can send the right quote?`
   );
   const [saving, setSaving] = useState(false);
   const [toast, setToast] = useState('');
