@@ -167,7 +167,10 @@ async function syncUserLeads(userId) {
     throw new Error('IndiaMART API key is not configured yet. Add it in Settings first.');
   }
 
-  const apiKey = decrypt(settings.indiamart.apiKey);
+  let apiKey = decrypt(settings.indiamart.apiKey);
+  if (!apiKey) apiKey = settings.indiamart.apiKey;
+  apiKey = (apiKey || '').trim();
+
   const endDate = new Date();
   const startDate = new Date(endDate.getTime() - 7 * 24 * 60 * 60 * 1000); // last 7 days
 
@@ -177,22 +180,48 @@ async function syncUserLeads(userId) {
     return `${pad(d.getDate())}-${months[d.getMonth()]}-${d.getFullYear()}`;
   };
 
-  const response = await axios.get(INDIAMART_API_URL, {
-    params: {
-      GLUSB_CRM_KEY: apiKey,
-      start_time: formatDate(startDate),
-      end_time: formatDate(endDate),
-    },
-    timeout: 15000,
-  });
+  let response;
+  try {
+    response = await axios.get(INDIAMART_API_URL, {
+      params: {
+        GLUSB_CRM_KEY: apiKey,
+        start_time: formatDate(startDate),
+        end_time: formatDate(endDate),
+      },
+      timeout: 15000,
+    });
+  } catch (e) {
+    try {
+      response = await axios.get('https://mapi.indiamart.com/wservg/enquiry/v2/checkkey/', {
+        params: { glusb_crm_key: apiKey },
+        timeout: 15000,
+      });
+    } catch (err2) {
+      throw new Error(`IndiaMART connection error: ${e.message}`);
+    }
+  }
 
-  const body = response.data;
-  let rawList = [];
+  let body = response ? response.data : null;
+
+  if (body && (body.CODE === '404' || body.CODE === 404 || body.STATUS === 'FAILURE' || body.MESSAGE === 'Authentication Failed' || body.STATUS === 'FAILED')) {
+    try {
+      const v2Res = await axios.get('https://mapi.indiamart.com/wservg/enquiry/v2/checkkey/', {
+        params: { glusb_crm_key: apiKey },
+        timeout: 15000,
+      });
+      if (v2Res.data && (Array.isArray(v2Res.data) || Array.isArray(v2Res.data.RESPONSE) || v2Res.data.CODE === 200)) {
+        body = v2Res.data;
+      }
+    } catch (e) {
+      // keep original body for error
+    }
+  }
 
   if (body && (body.CODE === '404' || body.CODE === 404 || body.STATUS === 'FAILURE' || body.MESSAGE === 'Authentication Failed')) {
     throw new Error(`IndiaMART Authentication Failed: ${body.MESSAGE || 'Invalid or Expired API Key'}. Please check your CRM Key in IndiaMART Seller Panel.`);
   }
 
+  let rawList = [];
   if (Array.isArray(body)) {
     rawList = body;
   } else if (body && Array.isArray(body.RESPONSE)) {

@@ -20,6 +20,7 @@ function decrypt(payload) {
   if (!payload) return '';
   try {
     const buf = Buffer.from(payload, 'base64');
+    if (buf.length <= 28) return payload;
     const iv = buf.subarray(0, 12);
     const tag = buf.subarray(12, 28);
     const encrypted = buf.subarray(28);
@@ -27,7 +28,7 @@ function decrypt(payload) {
     decipher.setAuthTag(tag);
     return Buffer.concat([decipher.update(encrypted), decipher.final()]).toString('utf8');
   } catch (err) {
-    return '';
+    return payload;
   }
 }
 
