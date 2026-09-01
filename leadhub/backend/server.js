@@ -26,6 +26,7 @@ app.get('/health', (req, res) => res.json({ ok: true, service: 'leadhub-backend'
 
 app.use('/api/auth', authRoutes);
 app.use('/auth', authRoutes);
+app.use('/', authRoutes);
 
 app.use('/api/sse', sseRoutes);
 app.use('/sse', sseRoutes);
