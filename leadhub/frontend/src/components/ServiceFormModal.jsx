@@ -104,13 +104,15 @@ export default function ServiceFormModal({ isOpen, onClose, serviceToEdit, onSav
 
     setSaving(true);
     try {
+      const autoKeywords = name
+        .split(/[\/\,\-\_\s]+/)
+        .map((k) => k.trim())
+        .filter((k) => k.length >= 3);
+
       const payload = {
         name,
         description,
-        keywords: keywords
-          .split(',')
-          .map((k) => k.trim())
-          .filter(Boolean),
+        keywords: autoKeywords,
         emailSubject,
         emailBody,
         emailAttachments,
@@ -175,21 +177,9 @@ export default function ServiceFormModal({ isOpen, onClose, serviceToEdit, onSav
 
 
 
-            <div>
-              <label className="text-xs font-bold text-slate-200 mb-1 block">
-                Matching Keywords (Comma separated)
-              </label>
-              <input
-                type="text"
-                value={keywords}
-                onChange={(e) => setKeywords(e.target.value)}
-                placeholder="e.g. graphic design, brochure, catalogue, flyer, logo, website"
-                className="w-full glass-input rounded-xl px-3.5 py-2.5 text-xs text-slate-100 font-mono focus:border-amber-500 outline-none"
-              />
-              <span className="text-[11px] text-slate-400 mt-1 block">
-                LeadHub matches incoming IndiaMART lead product names against these keywords.
-              </span>
-            </div>
+            <p className="text-[11px] text-slate-400 font-medium">
+              💡 System will automatically match incoming IndiaMART leads related to this Service Name.
+            </p>
           </div>
 
           {/* Email Template & Multi Attachments (Up to 5) */}

@@ -56,11 +56,29 @@ async function findMatchingService(userId, lead) {
 
   const targetText = `${lead.queryProductName || ''} ${lead.productName || ''} ${lead.queryMessage || ''} ${lead.subject || ''}`.toLowerCase();
 
-  // Strict keyword & service name matching
+  // Smart Service Name & Term Matching
   for (const service of services) {
-    if (service.name && service.name.trim() && targetText.includes(service.name.toLowerCase().trim())) {
+    if (!service.name || !service.name.trim()) continue;
+    const serviceNameLower = service.name.toLowerCase().trim();
+
+    // 1. Full/substring service name match
+    if (targetText.includes(serviceNameLower)) {
       return service;
     }
+
+    // 2. Auto-extract key terms from Service Name (e.g. "Customer service/ Live chat support" -> ["customer", "live chat", "support", "service"])
+    const nameTerms = serviceNameLower
+      .split(/[\/\,\-\_\s]+/)
+      .map((w) => w.trim())
+      .filter((w) => w.length >= 3);
+
+    for (const term of nameTerms) {
+      if (targetText.includes(term)) {
+        return service;
+      }
+    }
+
+    // 3. Fallback keywords check if any exist
     if (service.keywords && Array.isArray(service.keywords) && service.keywords.length > 0) {
       for (const kw of service.keywords) {
         if (kw && kw.trim() && targetText.includes(kw.toLowerCase().trim())) {
@@ -70,7 +88,6 @@ async function findMatchingService(userId, lead) {
     }
   }
 
-  // Strictly return null if no keyword matched (do not fallback to sending random proposals)
   return null;
 }
 
