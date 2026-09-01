@@ -7,7 +7,7 @@ const serviceSchema = new mongoose.Schema(
     description: { type: String, default: '' },
     keywords: [{ type: String }],
     
-    // Email Template & Attachment for this Service
+    // Email Template & Attachments (Up to 5 files)
     emailSubject: {
       type: String,
       default: 'Proposal for {{product}}',
@@ -16,24 +16,28 @@ const serviceSchema = new mongoose.Schema(
       type: String,
       default: 'Dear {{name}},',
     },
-    emailAttachment: {
-      filename: { type: String, default: '' },
-      path: { type: String, default: '' },
-      mimetype: { type: String, default: '' },
-      size: { type: Number, default: 0 },
-    },
+    emailAttachments: [
+      {
+        filename: { type: String, default: '' },
+        path: { type: String, default: '' },
+        mimetype: { type: String, default: '' },
+        size: { type: Number, default: 0 },
+      },
+    ],
 
-    // WhatsApp Template & Attachment for this Service
+    // WhatsApp Template & Attachments (Up to 5 files)
     whatsappMessage: {
       type: String,
       default: 'Hi {{name}} 👋, thanks for your enquiry about {{product}}!',
     },
-    whatsappAttachment: {
-      filename: { type: String, default: '' },
-      path: { type: String, default: '' },
-      mimetype: { type: String, default: '' },
-      size: { type: Number, default: 0 },
-    },
+    whatsappAttachments: [
+      {
+        filename: { type: String, default: '' },
+        path: { type: String, default: '' },
+        mimetype: { type: String, default: '' },
+        size: { type: Number, default: 0 },
+      },
+    ],
 
     isDefault: { type: Boolean, default: false },
   },

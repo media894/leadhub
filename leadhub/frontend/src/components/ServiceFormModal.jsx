@@ -8,17 +8,16 @@ export default function ServiceFormModal({ isOpen, onClose, serviceToEdit, onSav
 
   const [emailSubject, setEmailSubject] = useState('');
   const [emailBody, setEmailBody] = useState('');
-  const [emailAttachment, setEmailAttachment] = useState(null);
+  const [emailAttachments, setEmailAttachments] = useState([]);
 
   const [whatsappMessage, setWhatsappMessage] = useState('');
-  const [whatsappAttachment, setWhatsappAttachment] = useState(null);
+  const [whatsappAttachments, setWhatsappAttachments] = useState([]);
 
   const [uploadingEmail, setUploadingEmail] = useState(false);
   const [uploadingWa, setUploadingWa] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
 
-  // Sync state whenever serviceToEdit or isOpen changes
   useEffect(() => {
     if (serviceToEdit) {
       setName(serviceToEdit.name || '');
@@ -28,31 +27,43 @@ export default function ServiceFormModal({ isOpen, onClose, serviceToEdit, onSav
       );
       setEmailSubject(serviceToEdit.emailSubject || 'Proposal for {{product}}');
       setEmailBody(serviceToEdit.emailBody || 'Dear {{name}},');
-      setEmailAttachment(
-        serviceToEdit.emailAttachment?.filename ? serviceToEdit.emailAttachment : { filename: '', path: '' }
-      );
+      
+      const emailList = Array.isArray(serviceToEdit.emailAttachments) && serviceToEdit.emailAttachments.length > 0
+        ? serviceToEdit.emailAttachments
+        : (serviceToEdit.emailAttachment?.filename ? [serviceToEdit.emailAttachment] : []);
+      setEmailAttachments(emailList);
+
       setWhatsappMessage(
-        serviceToEdit.whatsappMessage ||
-          'Hi {{name}} 👋, thanks for your enquiry about {{product}}!'
+        serviceToEdit.whatsappMessage || 'Hi {{name}} 👋, thanks for your enquiry about {{product}}!'
       );
-      setWhatsappAttachment(
-        serviceToEdit.whatsappAttachment?.filename ? serviceToEdit.whatsappAttachment : { filename: '', path: '' }
-      );
+      const waList = Array.isArray(serviceToEdit.whatsappAttachments) && serviceToEdit.whatsappAttachments.length > 0
+        ? serviceToEdit.whatsappAttachments
+        : (serviceToEdit.whatsappAttachment?.filename ? [serviceToEdit.whatsappAttachment] : []);
+      setWhatsappAttachments(waList);
     } else {
       setName('');
       setDescription('');
       setKeywords('');
       setEmailSubject('Proposal for {{product}}');
       setEmailBody('Dear {{name}},');
-      setEmailAttachment({ filename: '', path: '' });
+      setEmailAttachments([]);
       setWhatsappMessage('Hi {{name}} 👋, thanks for your enquiry about {{product}}!');
-      setWhatsappAttachment({ filename: '', path: '' });
+      setWhatsappAttachments([]);
     }
   }, [serviceToEdit, isOpen]);
 
   if (!isOpen) return null;
 
   async function handleFileUpload(file, target) {
+    if (target === 'email' && emailAttachments.length >= 5) {
+      setError('Maximum 5 email attachments allowed per service.');
+      return;
+    }
+    if (target === 'whatsapp' && whatsappAttachments.length >= 5) {
+      setError('Maximum 5 WhatsApp attachments allowed per service.');
+      return;
+    }
+
     const formData = new FormData();
     formData.append('attachment', file);
 
@@ -63,14 +74,23 @@ export default function ServiceFormModal({ isOpen, onClose, serviceToEdit, onSav
       const { data } = await api.post('/services/upload', formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
-      if (target === 'email') setEmailAttachment(data);
-      if (target === 'whatsapp') setWhatsappAttachment(data);
+      if (target === 'email') setEmailAttachments((prev) => [...prev, data]);
+      if (target === 'whatsapp') setWhatsappAttachments((prev) => [...prev, data]);
+      setError('');
     } catch (err) {
       setError(err.response?.data?.message || 'File upload failed.');
     } finally {
       if (target === 'email') setUploadingEmail(false);
       if (target === 'whatsapp') setUploadingWa(false);
     }
+  }
+
+  function removeEmailAttachment(idx) {
+    setEmailAttachments((prev) => prev.filter((_, i) => i !== idx));
+  }
+
+  function removeWhatsappAttachment(idx) {
+    setWhatsappAttachments((prev) => prev.filter((_, i) => i !== idx));
   }
 
   async function handleSubmit(e) {
@@ -93,9 +113,11 @@ export default function ServiceFormModal({ isOpen, onClose, serviceToEdit, onSav
           .filter(Boolean),
         emailSubject,
         emailBody,
-        emailAttachment,
+        emailAttachments,
+        emailAttachment: emailAttachments[0] || { filename: '', path: '' },
         whatsappMessage,
-        whatsappAttachment,
+        whatsappAttachments,
+        whatsappAttachment: whatsappAttachments[0] || { filename: '', path: '' },
       };
 
       if (serviceToEdit?._id) {
@@ -118,64 +140,77 @@ export default function ServiceFormModal({ isOpen, onClose, serviceToEdit, onSav
       <div className="glass-panel w-full max-w-2xl rounded-2xl border border-amber-500/30 shadow-2xl p-6 md:p-8 relative max-h-[90vh] overflow-y-auto scrollbar-thin">
         <button
           onClick={onClose}
-          className="absolute top-5 right-5 text-slate-400 hover:text-slate-100 text-lg font-bold w-8 h-8 rounded-full flex items-center justify-center bg-slate-800/80 hover:bg-slate-700 transition-colors"
+          className="absolute top-4 right-4 text-slate-400 hover:text-white w-8 h-8 rounded-full flex items-center justify-center bg-slate-900 hover:bg-slate-800 transition-colors border border-slate-700"
         >
           ✕
         </button>
 
-        <h2 className="font-extrabold text-xl text-slate-100 mb-1">
-          {serviceToEdit ? `Edit Service: ${serviceToEdit.name || ''}` : 'Add New Service'}
+        <h2 className="font-display text-xl font-bold text-slate-100 mb-1">
+          {serviceToEdit ? 'Edit Service & Proposal Template' : 'Add New Service Template'}
         </h2>
-        <p className="text-xs text-slate-300 font-semibold mb-6">
-          Define email/WhatsApp templates & file attachments to auto-send whenever a lead asks about this service.
+        <p className="text-xs text-slate-400 mb-5">
+          Configure service keywords + custom proposal email (up to 5 attachments) & WhatsApp media.
         </p>
 
         {error && (
-          <div className="text-xs text-rose-300 bg-rose-500/20 border border-rose-500/40 rounded-xl px-4 py-3 mb-4 font-semibold">
+          <div className="mb-4 text-xs text-rose-400 bg-rose-500/10 border border-rose-500/30 rounded-xl p-3">
             {error}
           </div>
         )}
 
         <form onSubmit={handleSubmit} className="space-y-5">
-          {/* Service info */}
-          <div className="space-y-3 p-4 bg-slate-950/70 rounded-xl border border-slate-800">
-            <h3 className="font-extrabold text-xs text-amber-400 uppercase tracking-wider flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-amber-500" />
-              Service Details
-            </h3>
+          {/* General Service Details */}
+          <div className="space-y-3">
             <div>
               <label className="text-xs font-bold text-slate-200 mb-1 block">Service Name *</label>
               <input
+                type="text"
                 required
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                placeholder="e.g. Web Development / Solar Installation"
-                className="w-full glass-input rounded-xl px-3.5 py-2.5 text-xs text-slate-100 focus:border-amber-500 outline-none"
+                placeholder="e.g. Graphic Design & Catalogue Services"
+                className="w-full glass-input rounded-xl px-3.5 py-2.5 text-xs text-slate-100 font-mono focus:border-amber-500 outline-none"
               />
             </div>
+
             <div>
-              <label className="text-xs font-bold text-slate-200 mb-1 block">Keywords (comma separated)</label>
+              <label className="text-xs font-bold text-slate-200 mb-1 block">Description</label>
               <input
+                type="text"
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                placeholder="Short summary for your internal team reference"
+                className="w-full glass-input rounded-xl px-3.5 py-2.5 text-xs text-slate-100 font-mono focus:border-amber-500 outline-none"
+              />
+            </div>
+
+            <div>
+              <label className="text-xs font-bold text-slate-200 mb-1 block">
+                Matching Keywords (Comma separated)
+              </label>
+              <input
+                type="text"
                 value={keywords}
                 onChange={(e) => setKeywords(e.target.value)}
-                placeholder="website, web design, app development"
-                className="w-full glass-input rounded-xl px-3.5 py-2.5 text-xs text-slate-100 focus:border-amber-500 outline-none"
+                placeholder="e.g. graphic design, brochure, catalogue, flyer, logo, website"
+                className="w-full glass-input rounded-xl px-3.5 py-2.5 text-xs text-slate-100 font-mono focus:border-amber-500 outline-none"
               />
-              <span className="text-[11px] text-slate-300 font-medium mt-1 block">
-                Incoming IndiaMART product names matching these keywords will trigger this service's templates.
+              <span className="text-[11px] text-slate-400 mt-1 block">
+                LeadHub matches incoming IndiaMART lead product names against these keywords.
               </span>
             </div>
           </div>
 
-          {/* Email Template & Attachment */}
+          {/* Email Template & Multi Attachments (Up to 5) */}
           <div className="space-y-3 p-4 bg-slate-950/70 rounded-xl border border-slate-800">
-            <h3 className="font-extrabold text-xs text-blue-400 uppercase tracking-wider flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-blue-500" />
-              Email Template & Attachment
+            <h3 className="font-extrabold text-xs text-amber-400 uppercase tracking-wider flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-amber-500" />
+              Email Proposal & Attachments (Up to 5 Files)
             </h3>
             <div>
               <label className="text-xs font-bold text-slate-200 mb-1 block">Email Subject</label>
               <input
+                type="text"
                 value={emailSubject}
                 onChange={(e) => setEmailSubject(e.target.value)}
                 className="w-full glass-input rounded-xl px-3.5 py-2.5 text-xs text-slate-100 font-mono focus:border-amber-500 outline-none"
@@ -193,12 +228,18 @@ export default function ServiceFormModal({ isOpen, onClose, serviceToEdit, onSav
                 Placeholders: {'{{name}}'}, {'{{product}}'}, {'{{company}}'}
               </span>
             </div>
+
             <div>
-              <label className="text-xs font-bold text-slate-200 mb-1 block">
-                Email Attachment (GIF, Image, PDF, Brochure)
-              </label>
-              <div className="space-y-2">
-                <div className="flex items-center gap-3">
+              <div className="flex items-center justify-between mb-1.5">
+                <label className="text-xs font-bold text-slate-200">
+                  Email Attachments ({emailAttachments.length}/5 Files)
+                </label>
+                <span className="text-[11px] text-slate-400">PDFs, Brochures, Images, GIFs</span>
+              </div>
+
+              {/* Upload Button */}
+              {emailAttachments.length < 5 && (
+                <div className="mb-3">
                   <input
                     type="file"
                     id="email-attach-file"
@@ -208,44 +249,39 @@ export default function ServiceFormModal({ isOpen, onClose, serviceToEdit, onSav
                   />
                   <label
                     htmlFor="email-attach-file"
-                    className="bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 text-xs font-bold px-3.5 py-2 rounded-xl cursor-pointer transition-colors flex items-center gap-1.5"
+                    className="bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 text-xs font-bold px-4 py-2 rounded-xl cursor-pointer transition-colors inline-flex items-center gap-2"
                   >
-                    {uploadingEmail ? 'Uploading...' : '🖼️ Choose Email File (GIF / Image / PDF)'}
+                    {uploadingEmail ? 'Uploading...' : `📎 Add Email Attachment (${emailAttachments.length + 1}/5)`}
                   </label>
-                  {emailAttachment?.filename ? (
-                    <div className="flex items-center gap-2 text-xs text-emerald-300 bg-emerald-500/20 px-3 py-1.5 rounded-xl border border-emerald-500/40">
-                      <span>📄 {emailAttachment.filename}</span>
-                      <button
-                        type="button"
-                        onClick={() => setEmailAttachment({ filename: '', path: '' })}
-                        className="text-rose-400 font-bold hover:underline"
-                      >
-                        ×
-                      </button>
-                    </div>
-                  ) : (
-                    <span className="text-xs text-slate-400">No file attached</span>
-                  )}
                 </div>
-                {emailAttachment?.path && /\.(gif|png|jpg|jpeg|webp)$/i.test(emailAttachment.filename || emailAttachment.path) && (
-                  <div className="mt-2 flex items-center gap-3 p-2 bg-slate-900 rounded-xl border border-slate-800 w-fit">
-                    <img
-                      src={emailAttachment.path.startsWith('http') ? emailAttachment.path : `http://localhost:5000${emailAttachment.path}`}
-                      alt="Email GIF Preview"
-                      className="h-16 w-24 object-contain rounded border border-slate-700 bg-slate-950"
-                    />
-                    <span className="text-[11px] text-slate-300 font-medium">✨ Animated GIF / Image preview for email</span>
+              )}
+
+              {/* Uploaded Files Badges List */}
+              <div className="space-y-2">
+                {emailAttachments.map((att, idx) => (
+                  <div key={idx} className="flex items-center justify-between bg-slate-900/90 border border-slate-800 px-3 py-2 rounded-xl text-xs">
+                    <div className="flex items-center gap-2 overflow-hidden">
+                      <span className="text-amber-400 font-bold">#{idx + 1}</span>
+                      <span className="text-slate-200 truncate font-mono">{att.filename || 'Attachment'}</span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => removeEmailAttachment(idx)}
+                      className="text-rose-400 hover:text-rose-300 font-extrabold px-2 py-0.5 rounded hover:bg-rose-500/10 transition-colors"
+                    >
+                      ✕ Remove
+                    </button>
                   </div>
-                )}
+                ))}
               </div>
             </div>
           </div>
 
-          {/* WhatsApp Template & Attachment */}
+          {/* WhatsApp Template & Multi Attachments (Up to 5) */}
           <div className="space-y-3 p-4 bg-slate-950/70 rounded-xl border border-slate-800">
             <h3 className="font-extrabold text-xs text-emerald-400 uppercase tracking-wider flex items-center gap-2">
               <span className="w-2 h-2 rounded-full bg-emerald-500" />
-              WhatsApp Greeting & Media Attachment
+              WhatsApp Greeting & Media Attachments (Up to 5 Files)
             </h3>
 
             {/* Line space multi-message tip */}
@@ -266,12 +302,18 @@ export default function ServiceFormModal({ isOpen, onClose, serviceToEdit, onSav
                 Placeholders: {'{{name}}'}, {'{{product}}'}, {'{{company}}'}
               </span>
             </div>
+
             <div>
-              <label className="text-xs font-bold text-slate-200 mb-1 block">
-                WhatsApp Attachment (GIF, Image, PDF, Brochure)
-              </label>
-              <div className="space-y-2">
-                <div className="flex items-center gap-3">
+              <div className="flex items-center justify-between mb-1.5">
+                <label className="text-xs font-bold text-slate-200">
+                  WhatsApp Media Attachments ({whatsappAttachments.length}/5 Files)
+                </label>
+                <span className="text-[11px] text-slate-400">PDFs, Images, GIFs, Videos</span>
+              </div>
+
+              {/* Upload Button */}
+              {whatsappAttachments.length < 5 && (
+                <div className="mb-3">
                   <input
                     type="file"
                     id="wa-attach-file"
@@ -281,35 +323,30 @@ export default function ServiceFormModal({ isOpen, onClose, serviceToEdit, onSav
                   />
                   <label
                     htmlFor="wa-attach-file"
-                    className="bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 text-xs font-bold px-3.5 py-2 rounded-xl cursor-pointer transition-colors flex items-center gap-1.5"
+                    className="bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 text-xs font-bold px-4 py-2 rounded-xl cursor-pointer transition-colors inline-flex items-center gap-2"
                   >
-                    {uploadingWa ? 'Uploading...' : '📷 Choose WhatsApp Media (GIF / Image / PDF)'}
+                    {uploadingWa ? 'Uploading...' : `📷 Add WhatsApp Media (${whatsappAttachments.length + 1}/5)`}
                   </label>
-                  {whatsappAttachment?.filename ? (
-                    <div className="flex items-center gap-2 text-xs text-emerald-300 bg-emerald-500/20 px-3 py-1.5 rounded-xl border border-emerald-500/40">
-                      <span>📄 {whatsappAttachment.filename}</span>
-                      <button
-                        type="button"
-                        onClick={() => setWhatsappAttachment({ filename: '', path: '' })}
-                        className="text-rose-400 font-bold hover:underline"
-                      >
-                        ×
-                      </button>
-                    </div>
-                  ) : (
-                    <span className="text-xs text-slate-400">No media attached</span>
-                  )}
                 </div>
-                {whatsappAttachment?.path && /\.(gif|png|jpg|jpeg|webp)$/i.test(whatsappAttachment.filename || whatsappAttachment.path) && (
-                  <div className="mt-2 flex items-center gap-3 p-2 bg-slate-900 rounded-xl border border-slate-800 w-fit">
-                    <img
-                      src={whatsappAttachment.path.startsWith('http') ? whatsappAttachment.path : `http://localhost:5000${whatsappAttachment.path}`}
-                      alt="WhatsApp GIF Preview"
-                      className="h-16 w-24 object-contain rounded border border-slate-700 bg-slate-950"
-                    />
-                    <span className="text-[11px] text-slate-300 font-medium">✨ Animated GIF / Image preview for WhatsApp</span>
+              )}
+
+              {/* Uploaded Files Badges List */}
+              <div className="space-y-2">
+                {whatsappAttachments.map((att, idx) => (
+                  <div key={idx} className="flex items-center justify-between bg-slate-900/90 border border-slate-800 px-3 py-2 rounded-xl text-xs">
+                    <div className="flex items-center gap-2 overflow-hidden">
+                      <span className="text-emerald-400 font-bold">#{idx + 1}</span>
+                      <span className="text-slate-200 truncate font-mono">{att.filename || 'Media'}</span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => removeWhatsappAttachment(idx)}
+                      className="text-rose-400 hover:text-rose-300 font-extrabold px-2 py-0.5 rounded hover:bg-rose-500/10 transition-colors"
+                    >
+                      ✕ Remove
+                    </button>
                   </div>
-                )}
+                ))}
               </div>
             </div>
           </div>

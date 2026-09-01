@@ -117,7 +117,7 @@ async function sendUserApprovalNotice({ user }) {
   }
 }
 
-async function sendProposalEmail({ smtpSettings, templates, lead, attachment }) {
+async function sendProposalEmail({ smtpSettings, templates, lead, attachment, attachments }) {
   if (!smtpSettings.host || !smtpSettings.user || !smtpSettings.pass) {
     throw new Error('SMTP is not configured yet. Add it in Settings first.');
   }
@@ -135,19 +135,9 @@ async function sendProposalEmail({ smtpSettings, templates, lead, attachment }) 
   const subject = fillTemplate(templates.emailSubject, lead);
   const text = fillTemplate(templates.emailBody, lead);
 
-  const isImageOrGif =
-    attachment &&
-    (attachment.filename || attachment.path) &&
-    /\.(gif|png|jpg|jpeg|webp)$/i.test(attachment.filename || attachment.path);
-
   const html = `
     <div style="font-family: Arial, sans-serif; font-size: 15px; color: #2d3748; line-height: 1.6; max-width: 600px; padding: 10px 0;">
       <div>${text.replace(/\n/g, '<br/>')}</div>
-      ${
-        isImageOrGif
-          ? '<div style="margin-top: 20px;"><img src="cid:email_attachment_gif" style="max-width: 100%; max-height: 450px; border-radius: 8px; border: 1px solid #e2e8f0; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);" alt="Proposal Attachment GIF" /></div>'
-          : ''
-      }
     </div>
   `;
 
@@ -159,19 +149,30 @@ async function sendProposalEmail({ smtpSettings, templates, lead, attachment }) 
     html,
   };
 
-  if (attachment && attachment.path) {
-    const path = require('path');
-    const fullPath =
-      attachment.path.startsWith('/') || attachment.path.includes(':')
-        ? path.join(__dirname, '..', attachment.path)
-        : attachment.path;
-    mailOptions.attachments = [
-      {
-        filename: attachment.filename || 'attachment',
-        path: fullPath,
-        cid: isImageOrGif ? 'email_attachment_gif' : undefined,
-      },
-    ];
+  const rawList = Array.isArray(attachments) && attachments.length > 0
+    ? attachments
+    : (attachment && attachment.path ? [attachment] : []);
+
+  const path = require('path');
+  const fs = require('fs');
+  const nodemailerAttachments = [];
+
+  rawList.forEach((att, idx) => {
+    if (att && att.path) {
+      const fullPath = att.path.startsWith('/') || att.path.includes(':')
+        ? path.join(__dirname, '..', att.path)
+        : att.path;
+      if (fs.existsSync(fullPath)) {
+        nodemailerAttachments.push({
+          filename: att.filename || `attachment_${idx + 1}`,
+          path: fullPath,
+        });
+      }
+    }
+  });
+
+  if (nodemailerAttachments.length > 0) {
+    mailOptions.attachments = nodemailerAttachments;
   }
 
   await transporter.sendMail(mailOptions);
