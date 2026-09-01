@@ -50,6 +50,7 @@ router.post('/upload', upload.single('attachment'), (req, res) => {
 // GET all services for user
 router.get('/', async (req, res) => {
   try {
+    await Service.deleteMany({ user: req.userId, $or: [{ isDefault: true }, { name: 'Graphic Design & Catalogue Services' }] });
     let services = await Service.find({ user: req.userId }).sort({ createdAt: -1 });
     res.json(services);
   } catch (err) {

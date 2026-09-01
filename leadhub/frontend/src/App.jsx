@@ -19,52 +19,7 @@ function Protected({ children }) {
 
 function OnboardingGate({ children }) {
   const { user } = useAuth();
-  const location = useLocation();
-  const [checking, setChecking] = useState(true);
-  const [completed, setCompleted] = useState(true);
-
-  useEffect(() => {
-    let isMounted = true;
-    async function checkStatus() {
-      if (!user) {
-        if (isMounted) setChecking(false);
-        return;
-      }
-      try {
-        const { data } = await api.get('/settings/status');
-        if (isMounted) {
-          setCompleted(data.isCompleted);
-        }
-      } catch (err) {
-        if (isMounted) setCompleted(false);
-      } finally {
-        if (isMounted) setChecking(false);
-      }
-    }
-    checkStatus();
-    return () => {
-      isMounted = false;
-    };
-  }, [user, location.pathname]);
-
   if (!user) return <Navigate to="/login" replace />;
-
-  if (user.email?.toLowerCase() === 'natasha@oddinfotech.com') {
-    return children;
-  }
-
-  if (checking) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-paper text-slate text-sm font-medium">
-        Verifying system configuration...
-      </div>
-    );
-  }
-
-  if (!completed && location.pathname !== '/onboarding') {
-    return <Navigate to="/onboarding" replace />;
-  }
-
   return children;
 }
 
