@@ -24,14 +24,18 @@ export default function Register() {
       return;
     }
 
-    setLoading(true);
     try {
-      await register({
+      const res = await register({
         name: form.name,
         companyName: form.companyName,
         email: form.email,
         password: form.password,
       });
+      if (res.pendingApproval) {
+        alert(res.message || 'Registration submitted! Your account is pending Master Admin approval. You will be able to log in once approved.');
+        navigate('/login');
+        return;
+      }
       navigate('/onboarding');
     } catch (err) {
       setError(err.response?.data?.message || 'Could not create account.');

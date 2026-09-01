@@ -19,10 +19,12 @@ export function AuthProvider({ children }) {
 
   async function register(payload) {
     const { data } = await api.post('/auth/register', payload);
-    localStorage.setItem('leadhub_token', data.token);
-    localStorage.setItem('leadhub_user', JSON.stringify(data.user));
-    setUser(data.user);
-    return data.user;
+    if (data.token) {
+      localStorage.setItem('leadhub_token', data.token);
+      localStorage.setItem('leadhub_user', JSON.stringify(data.user));
+      setUser(data.user);
+    }
+    return data;
   }
 
   function logout() {

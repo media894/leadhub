@@ -159,14 +159,21 @@ router.post('/login', async (req, res) => {
         }
       }
     } else {
-      if (!user || !(await user.comparePassword(password))) {
-        return res.status(401).json({ message: 'Invalid email or password.' });
+      if (!user) {
+        return res.status(404).json({
+          message: 'Account not found. Please click "Create an account" below to sign up.',
+          notRegistered: true,
+        });
+      }
+
+      if (!(await user.comparePassword(password))) {
+        return res.status(401).json({ message: 'Invalid password. Please check your password and try again.' });
       }
 
       // Check if user is approved by Admin
       if (!user.isApproved && user.role !== 'admin') {
         return res.status(403).json({
-          message: 'Your account is pending Admin email approval. An email alert has been sent to Admin for activation.',
+          message: 'Your account is pending Master Admin approval (natasha@oddinfotech.com). Access will be granted once approved.',
           pendingApproval: true,
         });
       }
