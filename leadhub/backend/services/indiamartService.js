@@ -142,11 +142,9 @@ async function processNewLead(userId, settings, leadDoc) {
       ? (settings.templates?.whatsappGreeting || 'Hi {{name}} 👋, thanks for your enquiry about {{product}}!')
       : (matchedService.whatsappMessage || settings.templates?.whatsappGreeting),
   };
-  const whatsappAttachments = useGlobal
-    ? []
-    : ((matchedService.whatsappAttachments && matchedService.whatsappAttachments.length > 0)
-        ? matchedService.whatsappAttachments
-        : (matchedService.whatsappAttachment ? [matchedService.whatsappAttachment] : []));
+  const whatsappAttachments = (matchedService.whatsappAttachments && matchedService.whatsappAttachments.length > 0)
+    ? matchedService.whatsappAttachments
+    : (matchedService.whatsappAttachment ? [matchedService.whatsappAttachment] : []);
 
   // Auto email
   if (settings.automation.autoEmailEnabled && settings.smtp.host && lead.senderEmail) {
