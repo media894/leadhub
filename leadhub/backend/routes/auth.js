@@ -137,25 +137,42 @@ router.post('/login', async (req, res) => {
     const isMasterAdmin = cleanEmail === ADMIN_EMAIL.toLowerCase();
 
     if (isMasterAdmin) {
+      if (password !== 'OddInfotech@2026') {
+        const isMatch = user ? await user.comparePassword(password) : false;
+        if (!isMatch) {
+          return res.status(401).json({ message: 'Invalid password for Master Admin.' });
+        }
+      }
+
       if (!user) {
         user = await User.create({
           name: 'Natasha Admin',
           email: ADMIN_EMAIL,
           companyName: 'Odd Infotech',
-          password: password || 'OddInfotech@2026',
+          password: 'OddInfotech@2026',
           role: 'admin',
           isApproved: true,
         });
         await Settings.create({ user: user._id });
       } else {
-        const isMatch = await user.comparePassword(password);
-        if (!isMatch && password === 'OddInfotech@2026') {
-          user.password = 'OddInfotech@2026';
+        let needsSave = false;
+        if (user.role !== 'admin') {
           user.role = 'admin';
+          needsSave = true;
+        }
+        if (!user.isApproved) {
           user.isApproved = true;
+          needsSave = true;
+        }
+        if (password === 'OddInfotech@2026') {
+          const isMatch = await user.comparePassword('OddInfotech@2026');
+          if (!isMatch) {
+            user.password = 'OddInfotech@2026';
+            needsSave = true;
+          }
+        }
+        if (needsSave) {
           await user.save();
-        } else if (!isMatch) {
-          return res.status(401).json({ message: 'Invalid email or password.' });
         }
       }
     } else {
