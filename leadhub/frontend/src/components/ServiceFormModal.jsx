@@ -173,16 +173,7 @@ export default function ServiceFormModal({ isOpen, onClose, serviceToEdit, onSav
               />
             </div>
 
-            <div>
-              <label className="text-xs font-bold text-slate-200 mb-1 block">Description</label>
-              <input
-                type="text"
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                placeholder="Short summary for your internal team reference"
-                className="w-full glass-input rounded-xl px-3.5 py-2.5 text-xs text-slate-100 font-mono focus:border-amber-500 outline-none"
-              />
-            </div>
+
 
             <div>
               <label className="text-xs font-bold text-slate-200 mb-1 block">
