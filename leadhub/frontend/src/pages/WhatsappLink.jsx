@@ -7,11 +7,10 @@ export default function WhatsappLink() {
   const [connectedNumber, setConnectedNumber] = useState('');
   const [qr, setQr] = useState(null);
   const [connecting, setConnecting] = useState(false);
-  const [waMessage, setWaMessage] = useState(
-    `Hi {{name}} 👋, thanks for your enquiry about {{product}} on IndiaMART! Could you share a bit more about your requirement so we can send the right quote?`
-  );
+  const [waMessage, setWaMessage] = useState('');
   const [saving, setSaving] = useState(false);
   const [toast, setToast] = useState('');
+  const [showFallbackTemplate, setShowFallbackTemplate] = useState(false);
   const pollIntervalRef = useRef(null);
 
   useEffect(() => {
@@ -234,50 +233,70 @@ export default function WhatsappLink() {
           </div>
 
           {/* Card 2: WhatsApp Default Fallback Template & Multi-Message Rule */}
-          <div className="bg-[#18191d] border border-[#2d2e36] rounded-2xl p-6 shadow-xl space-y-4">
-            <div>
-              <div className="flex items-center justify-between">
-                <h2 className="font-display font-extrabold text-base text-white">Default Fallback WhatsApp Template</h2>
-                <span className="text-[11px] font-bold text-amber-400 bg-amber-500/10 px-2.5 py-1 rounded-lg border border-amber-500/30">
-                  ⚡ Service Templates Take Priority
-                </span>
-              </div>
-              <p className="text-xs text-slate-200 font-semibold mt-1 leading-relaxed">
-                Specific service templates added under <strong className="text-amber-400">Settings ➔ Services</strong> take primary priority! This template acts as the global default fallback. Use{' '}
-                <code className="bg-[#282a33] text-amber-400 font-mono px-1.5 py-0.5 rounded border border-amber-600/40">{`{{name}}`}</code> for name, and{' '}
-                <code className="bg-[#282a33] text-amber-400 font-mono px-1.5 py-0.5 rounded border border-amber-600/40">{`{{product}}`}</code> for service.
-              </p>
-            </div>
-
-            {/* Pro-Tip Banner for Line Space Splitting */}
-            <div className="p-3 bg-blue-500/10 border border-blue-500/30 rounded-xl text-xs text-blue-300 font-semibold flex items-start space-x-2">
-              <span className="text-base">💡</span>
+          <div className="bg-[#18191d] border border-[#2d2e36] rounded-2xl p-5 shadow-xl space-y-4">
+            <button
+              type="button"
+              onClick={() => setShowFallbackTemplate(!showFallbackTemplate)}
+              className="w-full flex items-center justify-between text-left focus:outline-none group"
+            >
               <div>
-                <strong>Multi-Message Pro Tip:</strong> Leaving a <strong>1-line blank space</strong> (press Enter twice) inside your message splits the text so it sends as <strong>separate sequential WhatsApp messages</strong>!
+                <div className="flex items-center gap-3">
+                  <h2 className="font-display font-extrabold text-base text-white group-hover:text-amber-400 transition-colors">
+                    Default Fallback WhatsApp Template
+                  </h2>
+                  <span className="text-[11px] font-bold text-amber-400 bg-amber-500/10 px-2.5 py-1 rounded-lg border border-amber-500/30">
+                    ⚡ Service Templates Take Priority
+                  </span>
+                </div>
+                <p className="text-xs text-slate-400 font-semibold mt-1">
+                  Specific service templates added under Settings ➔ Services take primary priority! Click to {showFallbackTemplate ? 'hide' : 'view / edit'} global default fallback.
+                </p>
               </div>
-            </div>
+              <div className="text-amber-400 font-extrabold text-sm px-3 py-1 bg-[#24252c] rounded-xl border border-[#383a45] shrink-0">
+                {showFallbackTemplate ? '▲ Close' : '▼ Click to View'}
+              </div>
+            </button>
 
-            <div className="space-y-2">
-              <label className="text-xs font-extrabold text-amber-400 uppercase tracking-wider block">
-                FALLBACK WHATSAPP MESSAGE
-              </label>
-              <textarea
-                rows={5}
-                value={waMessage}
-                onChange={(e) => setWaMessage(e.target.value)}
-                className="w-full bg-[#121316] border border-[#383a45] rounded-xl p-4 text-xs text-white font-mono leading-relaxed focus:border-amber-500 outline-none shadow-inner"
-              />
-            </div>
+            {showFallbackTemplate && (
+              <div className="space-y-4 pt-2 border-t border-[#2a2b34]">
+                <p className="text-xs text-slate-200 font-semibold leading-relaxed">
+                  Specific service templates added under <strong className="text-amber-400">Settings ➔ Services</strong> take primary priority! This template acts as the global default fallback. Use{' '}
+                  <code className="bg-[#282a33] text-amber-400 font-mono px-1.5 py-0.5 rounded border border-amber-600/40">{`{{name}}`}</code> for name, and{' '}
+                  <code className="bg-[#282a33] text-amber-400 font-mono px-1.5 py-0.5 rounded border border-amber-600/40">{`{{product}}`}</code> for service.
+                </p>
 
-            <div className="flex justify-end pt-2">
-              <button
-                onClick={saveTemplate}
-                disabled={saving}
-                className="bg-amber-500 hover:bg-amber-600 text-neutral-950 text-xs font-extrabold px-6 py-2.5 rounded-xl transition-all shadow-md disabled:opacity-50"
-              >
-                {saving ? 'Saving...' : 'Save Template'}
-              </button>
-            </div>
+                {/* Pro-Tip Banner for Line Space Splitting */}
+                <div className="p-3 bg-blue-500/10 border border-blue-500/30 rounded-xl text-xs text-blue-300 font-semibold flex items-start space-x-2">
+                  <span className="text-base">💡</span>
+                  <div>
+                    <strong>Multi-Message Pro Tip:</strong> Leaving a <strong>1-line blank space</strong> (press Enter twice) inside your message splits the text so it sends as <strong>separate sequential WhatsApp messages</strong>!
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-xs font-extrabold text-amber-400 uppercase tracking-wider block">
+                    FALLBACK WHATSAPP MESSAGE
+                  </label>
+                  <textarea
+                    rows={5}
+                    value={waMessage}
+                    onChange={(e) => setWaMessage(e.target.value)}
+                    placeholder="Enter default fallback WhatsApp greeting message..."
+                    className="w-full bg-[#121316] border border-[#383a45] rounded-xl p-4 text-xs text-white font-mono leading-relaxed focus:border-amber-500 outline-none shadow-inner"
+                  />
+                </div>
+
+                <div className="flex justify-end pt-2">
+                  <button
+                    onClick={saveTemplate}
+                    disabled={saving}
+                    className="bg-amber-500 hover:bg-amber-600 text-neutral-950 text-xs font-extrabold px-6 py-2.5 rounded-xl transition-all shadow-md disabled:opacity-50"
+                  >
+                    {saving ? 'Saving...' : 'Save Template'}
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </main>
