@@ -60,7 +60,7 @@ export default function WhatsappLink() {
     pollIntervalRef.current = setInterval(async () => {
       try {
         const { data: statusData } = await api.get('/whatsapp/status');
-        if (statusData.sessionActive) {
+        if (statusData?.sessionActive) {
           setSessionActive(true);
           setConnectedNumber(statusData.connectedNumber || '');
           setQr(null);
@@ -71,19 +71,18 @@ export default function WhatsappLink() {
         }
 
         const { data: qrData } = await api.get('/whatsapp/qr');
-        if (qrData.qr) {
+        if (qrData?.qr) {
           setQr(qrData.qr);
           setConnecting(false);
         }
       } catch (err) {
         console.error(err);
       }
-    }, 1500);
+    }, 2000);
 
     setTimeout(() => {
       if (pollIntervalRef.current) clearInterval(pollIntervalRef.current);
-      setConnecting(false);
-    }, 120000);
+    }, 180000);
   }
 
   async function disconnectWa() {

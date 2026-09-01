@@ -26,7 +26,15 @@ function startSession(userId) {
     authStrategy: new LocalAuth({ clientId: `leadhub_${userId}` }),
     puppeteer: {
       headless: true,
-      args: ['--no-sandbox', '--disable-setuid-sandbox'],
+      args: [
+        '--no-sandbox',
+        '--disable-setuid-sandbox',
+        '--disable-dev-shm-usage',
+        '--disable-accelerated-2d-canvas',
+        '--no-first-run',
+        '--no-zygote',
+        '--disable-gpu',
+      ],
     },
   });
 
@@ -47,16 +55,25 @@ function startSession(userId) {
     broadcast(userId, { type: 'whatsapp_ready', number });
   });
 
+  client.on('auth_failure', async (msg) => {
+    console.error(`[whatsapp:${userId}] Auth failure:`, msg);
+    latestQr.delete(userId);
+    broadcast(userId, { type: 'whatsapp_disconnected' });
+  });
+
   client.on('disconnected', async () => {
     await Settings.updateOne(
       { user: userId },
       { $set: { 'whatsapp.sessionActive': false, 'whatsapp.connectedNumber': '' } }
     );
     clients.delete(userId);
+    latestQr.delete(userId);
     broadcast(userId, { type: 'whatsapp_disconnected' });
   });
 
-  client.initialize();
+  client.initialize().catch((err) => {
+    console.error(`[whatsapp:${userId}] Initialization error:`, err.message);
+  });
   clients.set(userId, client);
   return client;
 }
