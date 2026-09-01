@@ -203,7 +203,15 @@ async function syncUserLeads(userId) {
 
   let body = response ? response.data : null;
 
-  if (body && (body.CODE === '404' || body.CODE === 404 || body.STATUS === 'FAILURE' || body.MESSAGE === 'Authentication Failed' || body.STATUS === 'FAILED')) {
+  // Handle IndiaMART Code 404 (No Enquiry Found in date range / recent poll window by another app)
+  if (body && (body.CODE === 404 || body.CODE === '404' || (body.MESSAGE && String(body.MESSAGE).toLowerCase().includes('no enquiry')))) {
+    settings.indiamart.lastSyncAt = new Date();
+    settings.indiamart.connected = true;
+    await settings.save();
+    return { created: 0, totalPulled: 0, message: 'No new leads found at this time.' };
+  }
+
+  if (body && (body.STATUS === 'FAILURE' || body.MESSAGE === 'Authentication Failed' || body.STATUS === 'FAILED')) {
     try {
       const v2Res = await axios.get('https://mapi.indiamart.com/wservg/enquiry/v2/checkkey/', {
         params: { glusb_crm_key: apiKey },
@@ -213,12 +221,12 @@ async function syncUserLeads(userId) {
         body = v2Res.data;
       }
     } catch (e) {
-      // keep original body for error
+      // keep original body
     }
   }
 
-  if (body && (body.CODE === '404' || body.CODE === 404 || body.STATUS === 'FAILURE' || body.MESSAGE === 'Authentication Failed')) {
-    throw new Error(`IndiaMART Authentication Failed: ${body.MESSAGE || 'Invalid or Expired API Key'}. Please check your CRM Key in IndiaMART Seller Panel.`);
+  if (body && (body.MESSAGE === 'Authentication Failed' || (body.STATUS === 'FAILURE' && body.CODE !== 404 && body.CODE !== '404'))) {
+    throw new Error(`IndiaMART Response: ${body.MESSAGE || 'Invalid or Expired API Key'}. Please check your CRM Key in IndiaMART Seller Panel.`);
   }
 
   let rawList = [];
