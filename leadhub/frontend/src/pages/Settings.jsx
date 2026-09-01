@@ -242,7 +242,7 @@ function IndiamartTab({ settings, reload, toast }) {
 
       <Field
         label="API KEY"
-        hint={settings.indiamart?.apiKeySet ? `Currently saved: ${showKey ? apiKey : maskedKeyText}` : 'Enter your IndiaMART CRM API key'}
+        hint={settings.indiamart?.apiKeySet ? (settings.indiamart?.connected ? 'CRM Key Status: Active & Secured ✓' : 'CRM Key Status: Saved') : 'Paste your IndiaMART CRM API key'}
       >
         <div className="relative">
           <input

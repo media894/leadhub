@@ -114,8 +114,9 @@ router.put('/indiamart', async (req, res) => {
     const { apiKey, autoSyncEnabled, syncIntervalMinutes } = req.body;
     const settings = await getOrCreateSettings(req.userId);
 
-    if (apiKey !== undefined && apiKey !== '') {
-      settings.indiamart.apiKey = encrypt(apiKey);
+    if (apiKey !== undefined && apiKey !== '' && !apiKey.includes('•')) {
+      const cleanKey = apiKey.trim();
+      settings.indiamart.apiKey = encrypt(cleanKey);
       settings.indiamart.connected = true;
     }
     if (typeof autoSyncEnabled === 'boolean') {
