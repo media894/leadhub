@@ -50,7 +50,6 @@ router.post('/upload', upload.single('attachment'), (req, res) => {
 // GET all services for user
 router.get('/', async (req, res) => {
   try {
-    await Service.deleteMany({ user: req.userId, $or: [{ isDefault: true }, { name: 'Graphic Design & Catalogue Services' }] });
     let services = await Service.find({ user: req.userId }).sort({ createdAt: -1 });
     res.json(services);
   } catch (err) {
@@ -68,8 +67,10 @@ router.post('/', async (req, res) => {
       emailSubject,
       emailBody,
       emailAttachment,
+      emailAttachments,
       whatsappMessage,
       whatsappAttachment,
+      whatsappAttachments,
       isDefault,
     } = req.body;
 
@@ -82,13 +83,10 @@ router.post('/', async (req, res) => {
       await Service.updateMany({ user: req.userId }, { isDefault: false });
     }
 
-    const serviceCount = await Service.countDocuments({ user: req.userId });
-    const setAsDefault = isDefault || serviceCount === 0;
-
     const service = await Service.create({
       user: req.userId,
       name,
-      description,
+      description: description || '',
       keywords: Array.isArray(keywords)
         ? keywords
         : (keywords || '')
@@ -98,9 +96,11 @@ router.post('/', async (req, res) => {
       emailSubject: emailSubject || undefined,
       emailBody: emailBody || undefined,
       emailAttachment: emailAttachment || {},
+      emailAttachments: emailAttachments || [],
       whatsappMessage: whatsappMessage || undefined,
       whatsappAttachment: whatsappAttachment || {},
-      isDefault: setAsDefault,
+      whatsappAttachments: whatsappAttachments || [],
+      isDefault: !!isDefault,
     });
 
     res.status(201).json(service);
@@ -119,8 +119,10 @@ router.put('/:id', async (req, res) => {
       emailSubject,
       emailBody,
       emailAttachment,
+      emailAttachments,
       whatsappMessage,
       whatsappAttachment,
+      whatsappAttachments,
       isDefault,
     } = req.body;
 
@@ -138,7 +140,7 @@ router.put('/:id', async (req, res) => {
     if (keywords !== undefined) {
       service.keywords = Array.isArray(keywords)
         ? keywords
-        : String(keywords)
+        : (keywords || '')
             .split(',')
             .map((k) => k.trim())
             .filter(Boolean);
@@ -146,8 +148,10 @@ router.put('/:id', async (req, res) => {
     if (emailSubject !== undefined) service.emailSubject = emailSubject;
     if (emailBody !== undefined) service.emailBody = emailBody;
     if (emailAttachment !== undefined) service.emailAttachment = emailAttachment;
+    if (emailAttachments !== undefined) service.emailAttachments = emailAttachments;
     if (whatsappMessage !== undefined) service.whatsappMessage = whatsappMessage;
     if (whatsappAttachment !== undefined) service.whatsappAttachment = whatsappAttachment;
+    if (whatsappAttachments !== undefined) service.whatsappAttachments = whatsappAttachments;
     if (isDefault !== undefined) service.isDefault = isDefault;
 
     await service.save();
