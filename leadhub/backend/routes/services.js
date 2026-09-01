@@ -51,34 +51,9 @@ router.post('/upload', upload.single('attachment'), (req, res) => {
 router.get('/', async (req, res) => {
   try {
     let services = await Service.find({ user: req.userId }).sort({ createdAt: -1 });
-    if (services.length === 0) {
-      const defaultService = await Service.create({
-        user: req.userId,
-        name: 'Graphic Design & Catalogue Services',
-        description: 'Brochure, flyer, catalogue & graphic design proposal automation',
-        keywords: ['graphic design', 'brochure', 'catalogue', 'flyer', 'logo', 'design', 'website'],
-        emailSubject: 'Proposal for {{product}}',
-        emailBody: 'Dear {{name}},',
-        emailAttachment: {
-          filename: '',
-          path: '',
-          mimetype: '',
-          size: 0,
-        },
-        whatsappMessage: 'Hi {{name}} 👋, thanks for your enquiry about {{product}}!',
-        whatsappAttachment: {
-          filename: '',
-          path: '',
-          mimetype: '',
-          size: 0,
-        },
-        isDefault: true,
-      });
-      services = [defaultService];
-    }
     res.json(services);
   } catch (err) {
-    res.status(500).json({ message: 'Could not fetch services.', error: err.message });
+    res.status(500).json({ message: 'Error loading services.', error: err.message });
   }
 });
 
