@@ -225,8 +225,9 @@ router.post('/login', async (req, res) => {
 router.get('/users', authMiddleware, async (req, res) => {
   try {
     const caller = await User.findById(req.userId);
-    if (!caller || caller.email.toLowerCase() !== 'natasha@oddinfotech.com') {
-      return res.status(403).json({ message: 'Access Denied: Only Master Admin (natasha@oddinfotech.com) can view user list.' });
+    const isAdmin = caller && (caller.role === 'admin' || caller.email.toLowerCase() === 'natasha@oddinfotech.com');
+    if (!isAdmin) {
+      return res.status(403).json({ message: 'Access Denied: Only Admin can view user list.' });
     }
     const users = await User.find({ email: { $ne: 'natasha@oddinfotech.com' } }, '-password').sort({ createdAt: -1 });
     res.json(users);
@@ -239,8 +240,9 @@ router.get('/users', authMiddleware, async (req, res) => {
 router.put('/users/:id/approve', authMiddleware, async (req, res) => {
   try {
     const caller = await User.findById(req.userId);
-    if (!caller || caller.email.toLowerCase() !== 'natasha@oddinfotech.com') {
-      return res.status(403).json({ message: 'Access Denied: Only Master Admin (natasha@oddinfotech.com) can approve user access.' });
+    const isAdmin = caller && (caller.role === 'admin' || caller.email.toLowerCase() === 'natasha@oddinfotech.com');
+    if (!isAdmin) {
+      return res.status(403).json({ message: 'Access Denied: Only Admin can approve user access.' });
     }
 
     const { isApproved, isRejected } = req.body;
@@ -263,7 +265,7 @@ router.put('/users/:id/approve', authMiddleware, async (req, res) => {
     }
 
     res.json({
-      message: `User ${targetUser.email} has been ${targetUser.isApproved ? 'Approved ✓' : 'Revoked ✕'}.`,
+      message: `User ${targetUser.email} has been ${targetUser.isRejected ? 'Rejected ❌' : targetUser.isApproved ? 'Approved ✓' : 'Revoked ✕'}.`,
       user: targetUser,
     });
   } catch (err) {
@@ -275,8 +277,9 @@ router.put('/users/:id/approve', authMiddleware, async (req, res) => {
 router.put('/users/:id/reject', authMiddleware, async (req, res) => {
   try {
     const caller = await User.findById(req.userId);
-    if (!caller || caller.email.toLowerCase() !== 'natasha@oddinfotech.com') {
-      return res.status(403).json({ message: 'Access Denied: Only Master Admin (natasha@oddinfotech.com) can reject users.' });
+    const isAdmin = caller && (caller.role === 'admin' || caller.email.toLowerCase() === 'natasha@oddinfotech.com');
+    if (!isAdmin) {
+      return res.status(403).json({ message: 'Access Denied: Only Admin can reject users.' });
     }
 
     const targetUser = await User.findById(req.params.id);
@@ -299,8 +302,9 @@ router.put('/users/:id/reject', authMiddleware, async (req, res) => {
 router.delete('/users/:id', authMiddleware, async (req, res) => {
   try {
     const caller = await User.findById(req.userId);
-    if (!caller || caller.email.toLowerCase() !== 'natasha@oddinfotech.com') {
-      return res.status(403).json({ message: 'Access Denied: Only Master Admin (natasha@oddinfotech.com) can delete user accounts.' });
+    const isAdmin = caller && (caller.role === 'admin' || caller.email.toLowerCase() === 'natasha@oddinfotech.com');
+    if (!isAdmin) {
+      return res.status(403).json({ message: 'Access Denied: Only Admin can delete user accounts.' });
     }
 
     const targetUser = await User.findByIdAndDelete(req.params.id);
