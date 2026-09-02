@@ -9,6 +9,7 @@ const userSchema = new mongoose.Schema(
     password: { type: String, required: true },
     role: { type: String, enum: ['admin', 'user'], default: 'user' },
     isApproved: { type: Boolean, default: false },
+    isRejected: { type: Boolean, default: false },
     approvalToken: { type: String, default: '' },
   },
   { timestamps: true }

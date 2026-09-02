@@ -36,8 +36,15 @@ export default function Login() {
           <h1 className="font-display font-semibold text-lg text-ink">Welcome back</h1>
 
           {error && (
-            <div className="text-sm text-ember bg-ember/10 border border-ember/20 rounded-lg px-3 py-2">
-              {error}
+            <div
+              className={`text-xs rounded-xl px-4 py-3 border shadow-sm ${
+                error.includes('REJECTED') || error.includes('rejected') || error.includes('Denied')
+                  ? 'bg-rose-950/90 text-rose-200 border-rose-500/70 font-bold flex items-start gap-2 animate-shake'
+                  : 'text-ember bg-ember/10 border border-ember/20'
+              }`}
+            >
+              <span className="text-base">❌</span>
+              <span>{error}</span>
             </div>
           )}
 

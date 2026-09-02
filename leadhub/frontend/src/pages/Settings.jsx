@@ -666,6 +666,17 @@ function UsersTab({ toast }) {
     }
   }
 
+  async function rejectUser(userId, email) {
+    if (!window.confirm(`Are you sure you want to REJECT registration for "${email}"? The user will be notified on login.`)) return;
+    try {
+      const { data } = await api.put(`/auth/users/${userId}/reject`);
+      toast(data.message || 'User registration rejected.');
+      fetchUsers();
+    } catch (err) {
+      toast('Failed to reject user registration.');
+    }
+  }
+
   const otherUsers = users.filter((u) => u.email?.toLowerCase() !== 'natasha@oddinfotech.com');
 
   return (
@@ -674,7 +685,7 @@ function UsersTab({ toast }) {
         <div>
           <h2 className="font-display font-extrabold text-lg text-white">User Access & Approvals</h2>
           <p className="text-xs text-slate-200 font-semibold mt-0.5">
-            Approve, revoke login access, or delete registered user accounts.
+            Approve, reject, revoke login access, or delete registered user accounts.
           </p>
         </div>
         <button
@@ -720,10 +731,12 @@ function UsersTab({ toast }) {
                   className={`text-xs font-extrabold px-3 py-1 rounded-full border shadow-sm ${
                     u.isApproved
                       ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/40'
+                      : u.isRejected
+                      ? 'bg-rose-500/20 text-rose-400 border-rose-500/50'
                       : 'bg-amber-500/10 text-amber-300 border-amber-500/40'
                   }`}
                 >
-                  {u.isApproved ? 'Approved ✓' : 'Pending Approval ⏳'}
+                  {u.isApproved ? 'Approved ✓' : u.isRejected ? 'Rejected ❌' : 'Pending Approval ⏳'}
                 </span>
 
                 <button
@@ -736,6 +749,16 @@ function UsersTab({ toast }) {
                 >
                   {u.isApproved ? '🚫 Revoke Access' : '✅ Grant Access'}
                 </button>
+
+                {!u.isRejected && (
+                  <button
+                    onClick={() => rejectUser(u._id, u.email)}
+                    title="Reject user registration request"
+                    className="text-xs font-extrabold px-3.5 py-2 rounded-xl transition-all shadow-sm bg-rose-600/30 hover:bg-rose-600 text-rose-200 hover:text-white border border-rose-500/50 flex items-center gap-1"
+                  >
+                    <span>❌</span> Reject
+                  </button>
+                )}
 
                 <button
                   onClick={() => deleteUser(u._id, u.email)}

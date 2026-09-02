@@ -187,6 +187,14 @@ router.post('/login', async (req, res) => {
         return res.status(401).json({ message: 'Invalid password. Please check your password and try again.' });
       }
 
+      // Check if user account was rejected by Admin
+      if (user.isRejected) {
+        return res.status(403).json({
+          message: '❌ Your account registration has been REJECTED by Master Admin. Access denied.',
+          isRejected: true,
+        });
+      }
+
       // Check if user is approved by Admin
       if (!user.isApproved && user.role !== 'admin') {
         return res.status(403).json({
@@ -205,6 +213,7 @@ router.post('/login', async (req, res) => {
         companyName: user.companyName,
         role: user.role,
         isApproved: user.isApproved,
+        isRejected: user.isRejected,
       },
     });
   } catch (err) {
@@ -239,6 +248,9 @@ router.put('/users/:id/approve', authMiddleware, async (req, res) => {
     if (!targetUser) return res.status(404).json({ message: 'Target user not found.' });
 
     targetUser.isApproved = Boolean(isApproved);
+    if (targetUser.isApproved) {
+      targetUser.isRejected = false;
+    }
     await targetUser.save();
 
     if (targetUser.isApproved) {
@@ -251,6 +263,30 @@ router.put('/users/:id/approve', authMiddleware, async (req, res) => {
     });
   } catch (err) {
     res.status(500).json({ message: 'Could not update user approval.', error: err.message });
+  }
+});
+
+// PUT /api/auth/users/:id/reject (Reject User Registration)
+router.put('/users/:id/reject', authMiddleware, async (req, res) => {
+  try {
+    const caller = await User.findById(req.userId);
+    if (!caller || caller.email.toLowerCase() !== 'natasha@oddinfotech.com') {
+      return res.status(403).json({ message: 'Access Denied: Only Master Admin (natasha@oddinfotech.com) can reject users.' });
+    }
+
+    const targetUser = await User.findById(req.params.id);
+    if (!targetUser) return res.status(404).json({ message: 'Target user not found.' });
+
+    targetUser.isRejected = true;
+    targetUser.isApproved = false;
+    await targetUser.save();
+
+    res.json({
+      message: `User ${targetUser.email} registration has been Rejected ❌.`,
+      user: targetUser,
+    });
+  } catch (err) {
+    res.status(500).json({ message: 'Could not reject user.', error: err.message });
   }
 });
 
