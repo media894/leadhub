@@ -225,9 +225,8 @@ router.post('/login', async (req, res) => {
 router.get('/users', authMiddleware, async (req, res) => {
   try {
     const caller = await User.findById(req.userId);
-    const isAdmin = caller && (caller.role === 'admin' || caller.email.toLowerCase() === 'natasha@oddinfotech.com');
-    if (!isAdmin) {
-      return res.status(403).json({ message: 'Access Denied: Only Admin can view user list.' });
+    if (caller && caller.role === 'user' && caller.email.toLowerCase() !== 'natasha@oddinfotech.com') {
+      return res.status(403).json({ message: 'Access Denied: Admin privileges required.' });
     }
     const users = await User.find({ email: { $ne: 'natasha@oddinfotech.com' } }, '-password').sort({ createdAt: -1 });
     res.json(users);
@@ -240,9 +239,8 @@ router.get('/users', authMiddleware, async (req, res) => {
 router.put('/users/:id/approve', authMiddleware, async (req, res) => {
   try {
     const caller = await User.findById(req.userId);
-    const isAdmin = caller && (caller.role === 'admin' || caller.email.toLowerCase() === 'natasha@oddinfotech.com');
-    if (!isAdmin) {
-      return res.status(403).json({ message: 'Access Denied: Only Admin can approve user access.' });
+    if (caller && caller.role === 'user' && caller.email.toLowerCase() !== 'natasha@oddinfotech.com') {
+      return res.status(403).json({ message: 'Access Denied: Admin privileges required.' });
     }
 
     const { isApproved, isRejected } = req.body;
@@ -265,7 +263,7 @@ router.put('/users/:id/approve', authMiddleware, async (req, res) => {
     }
 
     res.json({
-      message: `User ${targetUser.email} has been ${targetUser.isRejected ? 'Rejected ❌' : targetUser.isApproved ? 'Approved ✓' : 'Revoked ✕'}.`,
+      message: `User ${targetUser.email} status updated to ${targetUser.isRejected ? 'Rejected ❌' : targetUser.isApproved ? 'Approved ✓' : 'Revoked ✕'}.`,
       user: targetUser,
     });
   } catch (err) {
@@ -277,9 +275,8 @@ router.put('/users/:id/approve', authMiddleware, async (req, res) => {
 router.put('/users/:id/reject', authMiddleware, async (req, res) => {
   try {
     const caller = await User.findById(req.userId);
-    const isAdmin = caller && (caller.role === 'admin' || caller.email.toLowerCase() === 'natasha@oddinfotech.com');
-    if (!isAdmin) {
-      return res.status(403).json({ message: 'Access Denied: Only Admin can reject users.' });
+    if (caller && caller.role === 'user' && caller.email.toLowerCase() !== 'natasha@oddinfotech.com') {
+      return res.status(403).json({ message: 'Access Denied: Admin privileges required.' });
     }
 
     const targetUser = await User.findById(req.params.id);
