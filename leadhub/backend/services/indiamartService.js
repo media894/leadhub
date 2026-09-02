@@ -30,11 +30,21 @@ function normalizeLead(rawLead, userId) {
   const senderState = rawLead.SENDER_STATE || rawLead.sender_state || '';
   const queryTime = parseIndiaMartDate(rawLead.QUERY_TIME || rawLead.DATE_TIME_RE);
 
+  const rawQType = String(rawLead.QUERY_TYPE || rawLead.query_type || '').toUpperCase().trim();
+  let queryType = 'W';
+  if (['BL', 'B', 'P', 'BIZ', 'BUY_LEAD', 'BUY LEAD'].includes(rawQType)) {
+    queryType = 'BL';
+  } else if (['W', 'DIRECT', 'ENQUIRY'].includes(rawQType)) {
+    queryType = 'W';
+  } else {
+    queryType = rawQType.includes('BUY') ? 'BL' : 'W';
+  }
+
   return {
     user: userId,
     uniqueQueryId: String(queryId),
     queryTime,
-    queryType: rawLead.QUERY_TYPE || 'W',
+    queryType,
     queryProductName: productName,
     queryMessage,
     subject: rawLead.SUBJECT || productName,

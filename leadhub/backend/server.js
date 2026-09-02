@@ -15,6 +15,8 @@ const sseRoutes = require('./routes/sse');
 const path = require('path');
 const servicesRoutes = require('./routes/services');
 
+const indiamartWebhookRoutes = require('./routes/indiamartWebhook');
+
 const app = express();
 
 app.use(cors({ origin: true, credentials: true }));
@@ -23,6 +25,9 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 app.get('/api/health', (req, res) => res.json({ ok: true, service: 'leadhub-backend' }));
 app.get('/health', (req, res) => res.json({ ok: true, service: 'leadhub-backend' }));
+
+app.use('/api/indiamart', indiamartWebhookRoutes);
+app.use('/indiamart', indiamartWebhookRoutes);
 
 app.use('/api/auth', authRoutes);
 app.use('/auth', authRoutes);

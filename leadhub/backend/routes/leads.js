@@ -166,7 +166,13 @@ router.get('/', async (req, res) => {
       else if (status === 'Cold') filter.aiScore = { $lt: 40 };
       else filter.status = status;
     }
-    if (queryType) filter.queryType = queryType;
+    if (queryType) {
+      if (queryType === 'BL' || queryType === 'B') {
+        filter.queryType = { $in: ['BL', 'B', 'P', 'BIZ'] };
+      } else {
+        filter.queryType = queryType;
+      }
+    }
     if (from || to) {
       filter.queryTime = {};
       if (from) filter.queryTime.$gte = new Date(from);

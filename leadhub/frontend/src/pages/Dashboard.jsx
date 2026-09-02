@@ -21,7 +21,7 @@ export default function Dashboard() {
   const [stats, setStats] = useState(null);
   const [status, setStatus] = useState('All');
   const [activeTab, setActiveTab] = useState('Buy Leads'); // 'Direct Enquiries' or 'Buy Leads'
-  const [viewMode, setViewMode] = useState('list'); // 'list' (default), 'kanban', or 'analytics'
+  const [viewMode, setViewMode] = useState('analytics'); // 'analytics' (default), 'list', or 'kanban'
   const [search, setSearch] = useState('');
   const [loading, setLoading] = useState(true);
   const [syncing, setSyncing] = useState(false);
@@ -167,7 +167,7 @@ export default function Dashboard() {
   }
 
   const directEnquiriesCount = stats?.byType?.find((t) => t._id === 'W')?.count ?? 0;
-  const buyLeadsCount = stats?.byType?.find((t) => t._id === 'BL')?.count ?? 0;
+  const buyLeadsCount = stats?.byType?.filter((t) => ['BL', 'B', 'P', 'BIZ'].includes(t._id))?.reduce((acc, curr) => acc + curr.count, 0) ?? 0;
 
   return (
     <div className="flex min-h-screen bg-slate-950 text-slate-100 font-sans selection:bg-amber-500/30">
@@ -219,19 +219,8 @@ export default function Dashboard() {
             </button>
           </div>
 
-          {/* View Mode Switcher: Table vs Analytics */}
+          {/* View Mode Switcher: Analytics vs Table */}
           <div className="flex items-center bg-slate-900/90 p-1 rounded-xl border border-slate-800">
-            <button
-              onClick={() => setViewMode('list')}
-              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center space-x-1.5 ${
-                viewMode === 'list'
-                  ? 'bg-amber-500 text-neutral-950 shadow-sm'
-                  : 'text-slate-400 hover:text-slate-200'
-              }`}
-            >
-              <span>📋</span>
-              <span>Lead Table</span>
-            </button>
             <button
               onClick={() => setViewMode('analytics')}
               className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center space-x-1.5 ${
@@ -242,6 +231,17 @@ export default function Dashboard() {
             >
               <span>📈</span>
               <span>Lead Analytics</span>
+            </button>
+            <button
+              onClick={() => setViewMode('list')}
+              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center space-x-1.5 ${
+                viewMode === 'list'
+                  ? 'bg-amber-500 text-neutral-950 shadow-sm'
+                  : 'text-slate-400 hover:text-slate-200'
+              }`}
+            >
+              <span>📋</span>
+              <span>Lead Table</span>
             </button>
           </div>
 
