@@ -669,11 +669,18 @@ function UsersTab({ toast }) {
   async function rejectUser(userId, email) {
     if (!window.confirm(`Are you sure you want to REJECT registration for "${email}"? The user will be notified on login.`)) return;
     try {
-      const { data } = await api.put(`/auth/users/${userId}/reject`);
-      toast(data.message || 'User registration rejected.');
+      let data;
+      try {
+        const res = await api.put(`/auth/users/${userId}/reject`);
+        data = res.data;
+      } catch (e) {
+        const res = await api.put(`/auth/users/${userId}/approve`, { isApproved: false, isRejected: true });
+        data = res.data;
+      }
+      toast(data?.message || 'User registration rejected.');
       fetchUsers();
     } catch (err) {
-      toast('Failed to reject user registration.');
+      toast(err.response?.data?.message || 'Failed to reject user registration.');
     }
   }
 

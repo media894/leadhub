@@ -243,13 +243,18 @@ router.put('/users/:id/approve', authMiddleware, async (req, res) => {
       return res.status(403).json({ message: 'Access Denied: Only Master Admin (natasha@oddinfotech.com) can approve user access.' });
     }
 
-    const { isApproved } = req.body;
+    const { isApproved, isRejected } = req.body;
     const targetUser = await User.findById(req.params.id);
     if (!targetUser) return res.status(404).json({ message: 'Target user not found.' });
 
-    targetUser.isApproved = Boolean(isApproved);
-    if (targetUser.isApproved) {
-      targetUser.isRejected = false;
+    if (isRejected) {
+      targetUser.isRejected = true;
+      targetUser.isApproved = false;
+    } else {
+      targetUser.isApproved = Boolean(isApproved);
+      if (targetUser.isApproved) {
+        targetUser.isRejected = false;
+      }
     }
     await targetUser.save();
 
