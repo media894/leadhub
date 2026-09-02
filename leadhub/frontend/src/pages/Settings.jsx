@@ -726,7 +726,7 @@ function UsersTab({ toast }) {
                 {u.companyName && <div className="text-[11px] text-amber-400 font-semibold">🏢 {u.companyName}</div>}
               </div>
 
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2">
                 <span
                   className={`text-xs font-extrabold px-3 py-1 rounded-full border shadow-sm ${
                     u.isApproved
@@ -739,33 +739,37 @@ function UsersTab({ toast }) {
                   {u.isApproved ? 'Approved ✓' : u.isRejected ? 'Rejected ❌' : 'Pending Approval ⏳'}
                 </span>
 
+                {/* Grant / Revoke Access (Icon Only) */}
                 <button
                   onClick={() => toggleApproval(u._id, u.isApproved)}
-                  className={`text-xs font-extrabold px-4 py-2 rounded-xl transition-all shadow-sm ${
+                  title={u.isApproved ? 'Revoke Access' : 'Grant Access'}
+                  className={`w-9 h-9 rounded-xl flex items-center justify-center text-sm transition-all shadow-sm border ${
                     u.isApproved
-                      ? 'bg-rose-500/20 text-rose-300 hover:bg-rose-500/30 border border-rose-500/40'
-                      : 'bg-emerald-500/20 text-emerald-300 hover:bg-emerald-500/30 border border-emerald-500/40'
+                      ? 'bg-rose-500/15 hover:bg-rose-500/30 text-rose-300 border-rose-500/30'
+                      : 'bg-emerald-500/15 hover:bg-emerald-500/30 text-emerald-300 border-emerald-500/30'
                   }`}
                 >
-                  {u.isApproved ? '🚫 Revoke Access' : '✅ Grant Access'}
+                  {u.isApproved ? '🚫' : '✅'}
                 </button>
 
+                {/* Reject User (Icon Only) */}
                 {!u.isRejected && (
                   <button
                     onClick={() => rejectUser(u._id, u.email)}
-                    title="Reject user registration request"
-                    className="text-xs font-extrabold px-3.5 py-2 rounded-xl transition-all shadow-sm bg-rose-600/30 hover:bg-rose-600 text-rose-200 hover:text-white border border-rose-500/50 flex items-center gap-1"
+                    title="Reject User Registration"
+                    className="w-9 h-9 rounded-xl flex items-center justify-center text-sm transition-all shadow-sm bg-rose-600/25 hover:bg-rose-600/50 text-rose-200 border border-rose-500/40"
                   >
-                    <span>❌</span> Reject
+                    ❌
                   </button>
                 )}
 
+                {/* Delete User (Icon Only) */}
                 <button
                   onClick={() => deleteUser(u._id, u.email)}
-                  title="Delete user account"
-                  className="text-xs font-extrabold px-3.5 py-2 rounded-xl transition-all shadow-sm bg-rose-500/10 hover:bg-rose-600 text-rose-300 hover:text-white border border-rose-500/40 flex items-center gap-1"
+                  title="Delete User Account"
+                  className="w-9 h-9 rounded-xl flex items-center justify-center text-sm transition-all shadow-sm bg-slate-800 hover:bg-rose-600 text-slate-300 hover:text-white border border-slate-700 hover:border-rose-500/40"
                 >
-                  <span>🗑️</span> Delete
+                  🗑️
                 </button>
               </div>
             </div>
